@@ -14,7 +14,10 @@ export function useGame() {
   const [won, setWon] = useState(false)
 
   useEffect(() => {
-    getPuzzleForDate(getTodayString()).then(setPuzzle)
+    getPuzzleForDate(getTodayString()).then(p => {
+      const grid = [...p.grid].sort(() => Math.random() - 0.5)
+      setPuzzle({ ...p, grid })
+    })
   }, [])
 
   function startGame() {
