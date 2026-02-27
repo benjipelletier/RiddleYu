@@ -38,6 +38,7 @@ export default function GameScreen({
         <div style={s.logoWrap}>
           <span style={s.logoZh}>谜语</span>
           <span style={s.logoEn}>RiddleYu</span>
+          <span style={s.logoDate}>{new Date(puzzle.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
         </div>
         <div style={s.hearts}>
           {Array.from({ length: maxLives }).map((_, i) => (
@@ -235,6 +236,13 @@ const s = {
     color: 'var(--grey)',
     letterSpacing: 2,
     textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  logoDate: {
+    fontFamily: "'Noto Sans SC', sans-serif",
+    fontSize: 9,
+    color: '#c8bfaa',
+    letterSpacing: 1,
     marginTop: 2,
   },
   hearts: {
