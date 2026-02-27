@@ -17,7 +17,20 @@ export default async function handler(req, res) {
     console.error('KV read error:', e)
   }
 
-  // Cron hasn't run yet (e.g. first deploy) — generate on demand
+  // Cron hasn't run yet — try yesterday's puzzle as fallback
+  try {
+    const yesterday = new Date(date)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().slice(0, 10)
+    const prev = await kv.get(`puzzle:${yesterdayStr}`)
+    if (prev) {
+      return res.status(200).json(prev)
+    }
+  } catch (e) {
+    console.error('KV fallback error:', e)
+  }
+
+  // Nothing cached at all (e.g. first ever deploy) — generate on demand
   try {
     const puzzle = await generateAndCache(date)
     return res.status(200).json(puzzle)
