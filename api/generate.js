@@ -80,7 +80,7 @@ export default async function handler(req, res) {
 
     const puzzle = JSON.parse(message.content[0].text.trim())
 
-    await kv.set(`puzzle:${date}`, puzzle, { ex: 60 * 60 * 25 })
+    await kv.set(`puzzle:${date}`, puzzle)
     await kv.set('used_chengyu', [...usedChengyu, puzzle.chengyu.join('')])
 
     return res.status(200).json({ status: 'generated', date })
