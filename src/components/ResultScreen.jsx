@@ -1,9 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const FB_COLOR = { green: '#2d7a4f', yellow: '#c97d10', grey: '#7a7570' }
 const FB_BG = { green: '#d4edda', yellow: '#fef3cd', grey: '#e8e4dc' }
+const FB_EMOJI = { green: '🟩', yellow: '🟨', grey: '⬜' }
+
+function buildShareText(puzzle, won, attempts, lives, maxLives) {
+  const date = puzzle.date
+  const chengyu = puzzle.chengyu.join('')
+  const result = won ? `${maxLives - lives + 1}/${maxLives} ❤️` : `X/${maxLives}`
+  const grid = attempts.map(a => a.feedback.map(f => FB_EMOJI[f]).join('')).join('\n')
+  return `谜语 RiddleYu · ${date}\n${chengyu} ${result}\n\n${grid}\n\nriddle-yu.vercel.app`
+}
 
 export default function ResultScreen({ puzzle, won, attempts, lives, maxLives }) {
+  const [copied, setCopied] = useState(false)
+
+  function handleShare() {
+    const text = buildShareText(puzzle, won, attempts, lives, maxLives)
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
   return (
     <div style={s.root}>
       <div style={s.card}>
@@ -51,6 +70,10 @@ export default function ResultScreen({ puzzle, won, attempts, lives, maxLives })
             : `Used all ${maxLives} lives`
           }
         </div>
+
+        <button style={s.shareBtn} onClick={handleShare}>
+          {copied ? '已复制 · Copied!' : '分享 · Share'}
+        </button>
 
         <p style={s.comeback}>Come back tomorrow for a new 成语 ✦</p>
       </div>
@@ -204,7 +227,21 @@ const s = {
   livesLeft: {
     fontSize: 12,
     color: 'var(--grey)',
-    marginBottom: 8,
+    marginBottom: 16,
+  },
+  shareBtn: {
+    width: '100%',
+    padding: '12px 0',
+    marginBottom: 16,
+    background: 'var(--ink)',
+    color: 'var(--paper)',
+    border: 'none',
+    borderRadius: 12,
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 15,
+    fontWeight: 700,
+    letterSpacing: 1,
+    cursor: 'pointer',
   },
   comeback: {
     fontSize: 12,
