@@ -29,7 +29,7 @@ export default function ResultScreen({ puzzle, won, attempts, lives, maxLives })
         <div style={s.seal}>谜</div>
 
         <div style={won ? s.badgeWon : s.badgeLost}>
-          {won ? '成功！' : '下次再来'}
+          {won ? '成功' : '下次再来'}
         </div>
 
         <div style={s.chengyuRow}>
