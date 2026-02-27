@@ -40,6 +40,7 @@ export default function ResultScreen({ puzzle, won, attempts, lives, maxLives })
         <div style={s.pinyin}>{puzzle.pinyin}</div>
         <p style={s.meaning}>{puzzle.meaning}</p>
         <p style={s.origin}>{puzzle.origin}</p>
+        {puzzle.origin_zh && <p style={s.originZh}>{puzzle.origin_zh}</p>}
 
         <div style={s.divider} />
 
@@ -183,6 +184,13 @@ const s = {
     lineHeight: 1.7,
     color: 'var(--grey)',
     fontStyle: 'italic',
+  },
+  originZh: {
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 13,
+    lineHeight: 1.8,
+    color: 'var(--ink)',
+    marginTop: 10,
   },
   divider: {
     width: '100%',

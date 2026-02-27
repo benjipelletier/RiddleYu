@@ -34,7 +34,8 @@ Output this exact JSON shape:
   "chengyu": ["字","字","字","字"],
   "pinyin": "xxx xxx xxx xxx",
   "meaning": "English meaning of the idiom",
-  "origin": "One sentence about the origin or historical context",
+  "origin": "One sentence about the origin or historical context in English",
+  "origin_zh": "同一个故事，用简单的中文写，一到两句话",
   "riddles": [
     { "text": "Chinese riddle for char 1", "hint": "English hint" },
     { "text": "Chinese riddle for char 2", "hint": "English hint" },

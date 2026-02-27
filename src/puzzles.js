@@ -16,6 +16,7 @@ export const HARDCODED_PUZZLES = [
     pinyin: "mǎ dào chéng gōng",
     meaning: "Immediate success upon arrival — achieving your goal the moment you begin.",
     origin: "A Song dynasty phrase describing a cavalry charge so swift and decisive that victory came the instant the horses arrived.",
+    origin_zh: "宋朝时，人们用这句话形容骑兵冲锋，战马一到，胜利就来了。",
     riddles: [
       {
         text: "我是一种动物，力量强大，奔跑如风。我是十二生肖之一，也是古代战场上的伙伴。",
@@ -47,6 +48,7 @@ export const HARDCODED_PUZZLES = [
     pinyin: "yī shí èr niǎo",
     meaning: "Kill two birds with one stone — achieving two goals with a single action.",
     origin: "A universal idiom describing elegant efficiency, found across many cultures. In Chinese it paints a vivid image of a single thrown stone felling two birds.",
+    origin_zh: "用一块石头打下两只鸟，比喻一个行动同时达到两个目的。",
     riddles: [
       {
         text: "我是最小的数字，也是万物的起点。「第」加上我，就是第一。",
