@@ -145,7 +145,7 @@ const s = {
   },
   vibeLink: {
     color: '#c8bfaa',
-    textDecoration: 'underline',
+    textDecoration: 'none',
   },
   btn: {
     width: '100%',
