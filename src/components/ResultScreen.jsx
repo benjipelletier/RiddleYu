@@ -8,7 +8,7 @@ function buildShareText(puzzle, won, attempts, lives, maxLives) {
   const date = puzzle.date
   const result = won ? `${maxLives - lives + 1}/${maxLives} ❤️` : `X/${maxLives}`
   const grid = attempts.map(a => a.feedback.map(f => FB_EMOJI[f]).join('')).join('\n')
-  return `谜语 RiddleYu · ${date}\n${result}\n\n${grid}\n\nriddleyu.benji.codes`
+  return `谜语 RiddleYu · ${date}\n${result}\n\n${grid}\n\nriddle-yu.vercel.app`
 }
 
 export default function ResultScreen({ puzzle, won, attempts, lives, maxLives }) {
