@@ -53,6 +53,8 @@ export default function App() {
       submitChain={game.submitChain}
       isSelectable={game.isSelectable}
       isSelected={game.isSelected}
+      getChainPosition={game.getChainPosition}
+      unselectSlot={game.unselectSlot}
     />
   )
 }

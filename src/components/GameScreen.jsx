@@ -16,17 +16,47 @@ export default function GameScreen({
   submitChain,
   isSelectable,
   isSelected,
+  getChainPosition,
+  unselectSlot,
 }) {
   const [showHint, setShowHint] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [animatingFeedback, setAnimatingFeedback] = useState([null, null, null, null])
+  const [flipping, setFlipping] = useState([false, false, false, false])
 
   // Reset hint when slot changes
   React.useEffect(() => { setShowHint(false) }, [currentSlot])
 
   function handleSubmit() {
+    if (submitting) return
     setSubmitting(true)
-    submitChain()
-    setTimeout(() => setSubmitting(false), 600)
+
+    // Calculate feedback for animation
+    const feedback = chain.map((char, i) => {
+      if (char === puzzle.chengyu[i]) return 'green'
+      if (puzzle.chengyu.includes(char)) return 'yellow'
+      return 'grey'
+    })
+
+    // Staggered flip-reveal per slot
+    feedback.forEach((fb, i) => {
+      const delay = i * 200
+      setTimeout(() => {
+        setFlipping(prev => { const n = [...prev]; n[i] = true; return n })
+      }, delay)
+      setTimeout(() => {
+        setFlipping(prev => { const n = [...prev]; n[i] = false; return n })
+        setAnimatingFeedback(prev => { const n = [...prev]; n[i] = fb; return n })
+      }, delay + 150)
+    })
+
+    // Submit after animation finishes
+    setTimeout(() => {
+      submitChain()
+      setAnimatingFeedback([null, null, null, null])
+      setFlipping([false, false, false, false])
+      setSubmitting(false)
+    }, feedback.length * 200 + 150)
   }
 
   const lastAttempt = attempts[attempts.length - 1]
@@ -77,21 +107,26 @@ export default function GameScreen({
         <div style={s.chain}>
           {Array.from({ length: 4 }).map((_, i) => {
             const char = chain[i]
-            const fb = lastAttempt?.feedback[i]
             const isActive = i === currentSlot && !chainComplete
+            const fbColor = animatingFeedback[i]
+            const isFlipping = flipping[i]
             return (
               <React.Fragment key={i}>
-                <div style={{
-                  ...s.slot,
-                  ...(char
-                    ? fb
-                      ? { background: FB_BG[fb], borderColor: FB_COLOR[fb], color: FB_COLOR[fb], borderStyle: 'solid' }
-                      : { background: 'white', borderColor: '#1a3a5c', color: 'var(--ink)', borderStyle: 'solid' }
-                    : isActive
-                      ? { background: '#dce8f5', borderColor: '#1a3a5c', borderStyle: 'dashed', color: '#1a3a5c' }
-                      : { background: 'transparent', borderColor: '#d4cabb', borderStyle: 'dashed', color: '#d4cabb' }
-                  ),
-                }}>
+                <div
+                  onClick={() => char && !submitting && unselectSlot(i)}
+                  style={{
+                    ...s.slot,
+                    transition: 'transform 0.15s ease',
+                    transform: isFlipping ? 'scaleY(0)' : 'scaleY(1)',
+                    ...(fbColor
+                      ? { background: FB_BG[fbColor], borderColor: FB_COLOR[fbColor], color: FB_COLOR[fbColor], borderStyle: 'solid' }
+                      : char
+                        ? { background: 'white', borderColor: '#1a3a5c', color: 'var(--ink)', borderStyle: 'solid', cursor: 'pointer' }
+                        : isActive
+                          ? { background: '#dce8f5', borderColor: '#1a3a5c', borderStyle: 'dashed', color: '#1a3a5c' }
+                          : { background: 'transparent', borderColor: '#d4cabb', borderStyle: 'dashed', color: '#d4cabb' }
+                    ),
+                  }}>
                   {char
                     ? <span style={s.slotChar}>{char}</span>
                     : <span style={s.slotNum}>{i + 1}</span>
@@ -133,6 +168,7 @@ export default function GameScreen({
           {puzzle.grid.map((char, gi) => {
             const selectable = isSelectable(gi)
             const selected = isSelected(gi)
+            const chainPos = getChainPosition(gi)
 
             let btnStyle = { ...s.charBtn }
             if (selected) {
@@ -167,11 +203,14 @@ export default function GameScreen({
             return (
               <button
                 key={gi}
-                style={btnStyle}
+                style={{ ...btnStyle, position: 'relative' }}
                 onClick={() => selectChar(gi)}
                 disabled={!selectable}
               >
                 {char}
+                {chainPos && (
+                  <span style={s.chainPill}>{chainPos}</span>
+                )}
               </button>
             )
           })}
@@ -389,6 +428,7 @@ const s = {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 8,
+    overflow: 'visible',
   },
   charBtn: {
     aspectRatio: '1',
@@ -404,6 +444,24 @@ const s = {
     background: 'var(--paper2)',
     borderColor: '#e0d9ce',
     color: '#c0b8ae',
+  },
+  chainPill: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    background: '#1a3a5c',
+    color: 'white',
+    borderRadius: 99,
+    fontSize: 8,
+    fontFamily: "'Noto Sans SC', sans-serif",
+    fontWeight: 700,
+    width: 16,
+    height: 16,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+    zIndex: 1,
   },
   actions: {
     display: 'flex',

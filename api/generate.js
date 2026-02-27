@@ -12,10 +12,10 @@ Your job is to generate a daily puzzle for a game called RiddleYu.
 
 You will output ONLY valid JSON, no markdown, no explanation, no preamble.`
 
-const USER_PROMPT = (date, usedChengyu) => `Generate a RiddleYu puzzle for ${date}.
-${usedChengyu.length > 0 ? `\nDo NOT use any of these 成语, they have already been used: ${usedChengyu.join('、')}\n` : ''}
+const USER_PROMPT = (date, usedChengyu, fixedChengyu) => `Generate a RiddleYu puzzle for ${date}.
+${fixedChengyu ? `\nYou MUST use this exact 成语: ${fixedChengyu.join('')} (${fixedChengyu.join('、')}). Do not choose a different one.\n` : ''}${!fixedChengyu && usedChengyu.length > 0 ? `\nDo NOT use any of these 成语, they have already been used: ${usedChengyu.join('、')}\n` : ''}
 Rules:
-1. Choose a 成语 that is interesting, learnable, and not too obscure. Suitable for beginners to intermediate learners.
+1. ${fixedChengyu ? `Use the 成语 ${fixedChengyu.join('')} specified above.` : 'Choose a 成语 that is interesting, learnable, and not too obscure. Suitable for beginners to intermediate learners.'}
 2. For each of the 4 characters, choose exactly 3 imposter characters. Imposters must:
    - Belong to the same semantic category as the real character (e.g. if real char is 马 an animal, imposters are also animals)
    - Be common, recognizable Chinese characters
@@ -34,6 +34,7 @@ Output this exact JSON shape:
   "chengyu": ["字","字","字","字"],
   "pinyin": "xxx xxx xxx xxx",
   "meaning": "English meaning of the idiom",
+  "theme": "A single abstract English word that captures a vague emotional or philosophical feeling related to the idiom — mysterious and poetic, not descriptive. Think: 'stillness', 'unraveling', 'hunger', 'echoes'. Never a word that could describe the idiom's meaning.",
   "origin": "One sentence about the origin or historical context in English",
   "origin_zh": "同一个故事，用简单的中文写，一到两句话",
   "riddles": [
@@ -52,22 +53,30 @@ export default async function handler(req, res) {
 
   const date = req.query.date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 
-  // Idempotent — skip if already cached (unless ?force=true)
-  if (req.query.force !== 'true') {
-    try {
-      const existing = await kv.get(`puzzle:${date}`)
-      if (existing) return res.status(200).json({ status: 'already cached', date })
-    } catch (e) {
-      console.error('KV read error:', e)
+  // Check for existing puzzle
+  let fixedChengyu = null
+  let usedChengyu = []
+
+  try {
+    const existing = await kv.get(`puzzle:${date}`)
+    if (existing) {
+      if (req.query.force !== 'true') {
+        return res.status(200).json({ status: 'already cached', date })
+      }
+      // Force regen — reuse same 成语
+      fixedChengyu = existing.chengyu
     }
+  } catch (e) {
+    console.error('KV read error:', e)
   }
 
-  // Fetch used 成语 to avoid duplicates
-  let usedChengyu = []
-  try {
-    usedChengyu = (await kv.get('used_chengyu')) || []
-  } catch (e) {
-    console.error('KV read error (used_chengyu):', e)
+  // Fetch used 成语 to avoid duplicates (only needed when picking a new one)
+  if (!fixedChengyu) {
+    try {
+      usedChengyu = (await kv.get('used_chengyu')) || []
+    } catch (e) {
+      console.error('KV read error (used_chengyu):', e)
+    }
   }
 
   try {
@@ -75,13 +84,15 @@ export default async function handler(req, res) {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: USER_PROMPT(date, usedChengyu) }],
+      messages: [{ role: 'user', content: USER_PROMPT(date, usedChengyu, fixedChengyu) }],
     })
 
     const puzzle = JSON.parse(message.content[0].text.trim())
 
     await kv.set(`puzzle:${date}`, puzzle)
-    await kv.set('used_chengyu', [...usedChengyu, puzzle.chengyu.join('')])
+    if (!fixedChengyu) {
+      await kv.set('used_chengyu', [...usedChengyu, puzzle.chengyu.join('')])
+    }
 
     return res.status(200).json({ status: 'generated', date })
   } catch (e) {

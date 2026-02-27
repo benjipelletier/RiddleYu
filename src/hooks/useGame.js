@@ -33,6 +33,12 @@ export function useGame() {
     return selectedIndices.includes(gridIndex)
   }
 
+  // Returns 1-4 if this grid char is in the chain, null otherwise
+  function getChainPosition(gridIndex) {
+    const idx = selectedIndices.indexOf(gridIndex)
+    return idx === -1 ? null : idx + 1
+  }
+
   function selectChar(gridIndex) {
     if (!isSelectable(gridIndex)) return
     const char = puzzle.grid[gridIndex]
@@ -52,6 +58,18 @@ export function useGame() {
     setChain([null, null, null, null])
     setSelectedIndices([null, null, null, null])
     setCurrentSlot(0)
+  }
+
+  function unselectSlot(slotIndex) {
+    const newChain = [...chain]
+    const newIndices = [...selectedIndices]
+    for (let i = slotIndex; i < 4; i++) {
+      newChain[i] = null
+      newIndices[i] = null
+    }
+    setChain(newChain)
+    setSelectedIndices(newIndices)
+    setCurrentSlot(slotIndex)
   }
 
   function getFeedback(ch) {
@@ -98,8 +116,10 @@ export function useGame() {
     startGame,
     selectChar,
     resetChain,
+    unselectSlot,
     submitChain,
     isSelectable,
     isSelected,
+    getChainPosition,
   }
 }
