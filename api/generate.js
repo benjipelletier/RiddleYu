@@ -13,14 +13,16 @@ export default async function handler(req, res) {
 
   const date = req.query.date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 
-  // Idempotent — skip if already cached
-  try {
-    const existing = await kv.get(`puzzle:${date}`)
-    if (existing) {
-      return res.status(200).json({ status: 'already cached', date })
+  // Idempotent — skip if already cached (unless ?force=true)
+  if (req.query.force !== 'true') {
+    try {
+      const existing = await kv.get(`puzzle:${date}`)
+      if (existing) {
+        return res.status(200).json({ status: 'already cached', date })
+      }
+    } catch (e) {
+      console.error('KV read error:', e)
     }
-  } catch (e) {
-    console.error('KV read error:', e)
   }
 
   try {
