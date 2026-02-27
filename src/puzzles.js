@@ -6,8 +6,7 @@
 //   meaning: "...",
 //   origin: "...",
 //   riddles: [ { text: "...", hint: "..." }, x4 ],
-//   grid: ["字", ...16 chars shuffled]
-//   // grid contains the 4 real chars + 3 imposters per slot, all shuffled
+//   grid: ["字", ...16 chars shuffled]  // 4 real + 12 imposters, any can go in any slot
 // }
 
 export const HARDCODED_PUZZLES = [
@@ -41,9 +40,6 @@ export const HARDCODED_PUZZLES = [
     // Slot 2 (成): imposters 为,变,做
     // Slot 3 (功): imposters 果,绩,效
     grid: ["龙", "来", "成", "果", "马", "为", "去", "绩", "虎", "到", "变", "行", "牛", "做", "功", "效"],
-    // which slot each grid char belongs to (for game logic)
-    // slotMap[i] = slot index (0-3) that grid[i] is an answer/imposter for
-    slotMap: [0, 1, 2, 3, 0, 2, 1, 3, 0, 1, 2, 1, 0, 2, 3, 3],
   },
   {
     date: "2026-02-27",
@@ -70,7 +66,6 @@ export const HARDCODED_PUZZLES = [
       },
     ],
     grid: ["一", "石", "二", "鸟", "三", "木", "三", "鱼", "七", "土", "两", "蝶", "万", "水", "双", "虫"],
-    slotMap: [0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3],
   },
 ]
 
@@ -83,5 +78,5 @@ export async function getPuzzleForDate(dateStr) {
 }
 
 export function getTodayString() {
-  return new Date().toISOString().slice(0, 10)
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 }

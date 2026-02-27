@@ -16,7 +16,6 @@ export default function GameScreen({
   submitChain,
   isSelectable,
   isSelected,
-  getCharSlot,
 }) {
   const [showHint, setShowHint] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -133,16 +132,14 @@ export default function GameScreen({
           {puzzle.grid.map((char, gi) => {
             const selectable = isSelectable(gi)
             const selected = isSelected(gi)
-            const slot = getCharSlot(gi)
-            const fb = lastAttempt?.feedback[slot]
 
             let btnStyle = { ...s.charBtn }
             if (selected) {
               btnStyle = {
                 ...btnStyle,
-                background: fb ? FB_BG[fb] : '#e8f0f8',
-                borderColor: fb ? FB_COLOR[fb] : '#1a3a5c',
-                color: fb ? FB_COLOR[fb] : '#1a3a5c',
+                background: '#e8f0f8',
+                borderColor: '#1a3a5c',
+                color: '#1a3a5c',
                 opacity: 0.7,
                 cursor: 'default',
                 transform: 'scale(0.95)',

@@ -8,6 +8,7 @@ export function useGame() {
   const [phase, setPhase] = useState('intro') // intro | game | result
   const [currentSlot, setCurrentSlot] = useState(0)
   const [chain, setChain] = useState([null, null, null, null]) // char or null per slot
+  const [selectedIndices, setSelectedIndices] = useState([null, null, null, null]) // grid index per slot
   const [lives, setLives] = useState(MAX_LIVES)
   const [attempts, setAttempts] = useState([]) // [{chain: [...], feedback: [...]}]
   const [won, setWon] = useState(false)
@@ -20,22 +21,16 @@ export function useGame() {
     setPhase('game')
   }
 
-  // Returns which slot this grid char belongs to
-  function getCharSlot(gridIndex) {
-    return puzzle.slotMap[gridIndex]
-  }
-
   // Is this grid char selectable right now?
   function isSelectable(gridIndex) {
     if (phase !== 'game') return false
-    const slot = getCharSlot(gridIndex)
-    return slot === currentSlot && chain[currentSlot] === null
+    if (chain[currentSlot] !== null) return false
+    return !selectedIndices.includes(gridIndex)
   }
 
-  // Is this char already selected (locked into chain)?
+  // Is this grid char already locked into the chain?
   function isSelected(gridIndex) {
-    const slot = getCharSlot(gridIndex)
-    return chain[slot] === puzzle.grid[gridIndex]
+    return selectedIndices.includes(gridIndex)
   }
 
   function selectChar(gridIndex) {
@@ -43,19 +38,19 @@ export function useGame() {
     const char = puzzle.grid[gridIndex]
     const newChain = [...chain]
     newChain[currentSlot] = char
-
     setChain(newChain)
 
-    // advance to next empty slot
+    const newIndices = [...selectedIndices]
+    newIndices[currentSlot] = gridIndex
+    setSelectedIndices(newIndices)
+
     const nextSlot = currentSlot + 1
-    if (nextSlot < 4) {
-      setCurrentSlot(nextSlot)
-    }
-    // if all 4 filled, stay — user must submit
+    if (nextSlot < 4) setCurrentSlot(nextSlot)
   }
 
   function resetChain() {
     setChain([null, null, null, null])
+    setSelectedIndices([null, null, null, null])
     setCurrentSlot(0)
   }
 
@@ -106,6 +101,5 @@ export function useGame() {
     submitChain,
     isSelectable,
     isSelected,
-    getCharSlot,
   }
 }

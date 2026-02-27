@@ -53,7 +53,6 @@ export default function App() {
       submitChain={game.submitChain}
       isSelectable={game.isSelectable}
       isSelected={game.isSelected}
-      getCharSlot={game.getCharSlot}
     />
   )
 }

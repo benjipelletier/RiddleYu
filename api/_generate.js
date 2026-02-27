@@ -24,7 +24,6 @@ Rules:
    - NOT directly reveal the character
 4. Write an English hint for each riddle (for the hint button)
 5. The grid array must contain all 16 characters (4 real + 12 imposters) shuffled randomly
-6. slotMap must map each grid position to its slot (0=first char, 1=second, 2=third, 3=fourth)
 
 Output this exact JSON shape:
 {
@@ -39,8 +38,7 @@ Output this exact JSON shape:
     { "text": "Chinese riddle for char 3", "hint": "English hint" },
     { "text": "Chinese riddle for char 4", "hint": "English hint" }
   ],
-  "grid": ["字",...16 chars shuffled...],
-  "slotMap": [0,...16 slot indices matching grid order...]
+  "grid": ["字",...16 chars shuffled...]
 }`
 
 // Generates a puzzle for the given date and caches it in KV.
