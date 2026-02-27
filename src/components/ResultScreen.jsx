@@ -8,8 +8,7 @@ function buildShareText(puzzle, won, attempts, lives, maxLives) {
   const date = puzzle.date
   const result = won ? `${maxLives - lives + 1}/${maxLives} ❤️` : `X/${maxLives}`
   const grid = attempts.map(a => a.feedback.map(f => FB_EMOJI[f]).join('')).join('\n')
-  const theme = puzzle.theme ? `"${puzzle.theme}"` : ''
-  return `谜语 RiddleYu · ${date}\n${theme} ${result}\n\n${grid}\n\nriddleyu.benji.codes`
+  return `谜语 RiddleYu · ${date}\n${result}\n\n${grid}\n\nriddleyu.benji.codes`
 }
 
 export default function ResultScreen({ puzzle, won, attempts, lives, maxLives }) {

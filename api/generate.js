@@ -34,7 +34,6 @@ Output this exact JSON shape:
   "chengyu": ["字","字","字","字"],
   "pinyin": "xxx xxx xxx xxx",
   "meaning": "English meaning of the idiom",
-  "theme": "A single abstract English word that captures a vague emotional or philosophical feeling related to the idiom — mysterious and poetic, not descriptive. Think: 'stillness', 'unraveling', 'hunger', 'echoes'. Never a word that could describe the idiom's meaning.",
   "origin": "One sentence about the origin or historical context in English",
   "origin_zh": "同一个故事，用简单的中文写，一到两句话",
   "riddles": [
