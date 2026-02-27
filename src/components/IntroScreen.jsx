@@ -29,6 +29,7 @@ export default function IntroScreen({ onStart }) {
         </div>
         <div style={s.lives}>You have <strong>5 lives</strong>. 加油！</div>
         <button style={s.btn} onClick={onStart}>开始 · Start</button>
+        <p style={s.vibe}>Vibecoded with ♥ by <a href="https://instagram.com/benjipelletier" target="_blank" rel="noreferrer" style={s.vibeLink}>笨鸡</a></p>
       </div>
     </div>
   )
@@ -135,6 +136,16 @@ const s = {
     fontSize: 13,
     color: 'var(--grey)',
     marginBottom: 24,
+  },
+  vibe: {
+    marginTop: 16,
+    fontSize: 11,
+    color: '#c8bfaa',
+    fontStyle: 'normal',
+  },
+  vibeLink: {
+    color: '#c8bfaa',
+    textDecoration: 'underline',
   },
   btn: {
     width: '100%',
