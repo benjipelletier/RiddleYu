@@ -6,7 +6,7 @@ import { kv } from '@vercel/kv'
 import { generateAndCache } from './_generate.js'
 
 export default async function handler(req, res) {
-  const date = req.query.date || new Date().toISOString().slice(0, 10)
+  const date = req.query.date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 
   try {
     const cached = await kv.get(`puzzle:${date}`)

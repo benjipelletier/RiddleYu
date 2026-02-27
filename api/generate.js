@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const date = req.query.date || new Date().toISOString().slice(0, 10)
+  const date = req.query.date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 
   // Idempotent — skip if already cached
   try {
