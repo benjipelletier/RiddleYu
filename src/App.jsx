@@ -1,0 +1,59 @@
+import React from 'react'
+import { useGame } from './hooks/useGame'
+import IntroScreen from './components/IntroScreen'
+import GameScreen from './components/GameScreen'
+import ResultScreen from './components/ResultScreen'
+
+export default function App() {
+  const game = useGame()
+
+  if (!game.puzzle) {
+    return (
+      <div style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: "'Noto Serif SC', serif",
+        fontSize: 24,
+        color: 'var(--grey)',
+      }}>
+        谜语...
+      </div>
+    )
+  }
+
+  if (game.phase === 'intro') {
+    return <IntroScreen onStart={game.startGame} />
+  }
+
+  if (game.phase === 'result') {
+    return (
+      <ResultScreen
+        puzzle={game.puzzle}
+        won={game.won}
+        attempts={game.attempts}
+        lives={game.lives}
+        maxLives={game.maxLives}
+      />
+    )
+  }
+
+  return (
+    <GameScreen
+      puzzle={game.puzzle}
+      currentSlot={game.currentSlot}
+      chain={game.chain}
+      lives={game.lives}
+      maxLives={game.maxLives}
+      attempts={game.attempts}
+      chainComplete={game.chainComplete}
+      selectChar={game.selectChar}
+      resetChain={game.resetChain}
+      submitChain={game.submitChain}
+      isSelectable={game.isSelectable}
+      isSelected={game.isSelected}
+      getCharSlot={game.getCharSlot}
+    />
+  )
+}

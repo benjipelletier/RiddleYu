@@ -1,0 +1,21 @@
+:root {
+  --ink: #2c2416;
+  --paper: #f5f0e8;
+  --paper2: #ede8de;
+  --paper3: #e2dcd0;
+  --grey: #7a7570;
+  --seal: #c0392b;
+  --active: #1a3a5c;
+  --red: #c0392b;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper3);
+  font-family: 'Noto Sans SC', sans-serif;
+}
