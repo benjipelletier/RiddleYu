@@ -28,10 +28,14 @@ export default async function handler(req, res) {
         'end_char', ll.end_char,
         'start_pinyin', ll.start_pinyin,
         'end_pinyin', ll.end_pinyin,
+        'timestamp_ms', ll.timestamp_ms,
         'song', s.title,
         'artist', s.artist,
         'album', s.album,
-        'year', s.year
+        'year', s.year,
+        'album_art_url', s.album_art_url,
+        'preview_url', s.preview_url,
+        'spotify_url', s.spotify_url
       ) as to_line,
       (SELECT COUNT(*) FROM chains c2 WHERE c2.from_line_id = ll.id AND c2.match_type = ${mode}) as connections
     FROM chains c
