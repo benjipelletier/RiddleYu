@@ -6,7 +6,20 @@ const strictnessModes = [
   { id: "toneless", label: "无声调", desc: "Toneless" },
 ];
 
-export default function ExplorerMobile({ current, chains, history, onSelect, strictness, onStrictnessChange }) {
+const EqLoader = () => (
+  <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "5px", height: "40px", padding: "8px 0" }}>
+    {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (
+      <div key={i} style={{
+        width: "4px", height: "100%", borderRadius: "2px",
+        background: "rgba(201,169,110,0.5)",
+        animation: `eq-bounce 0.8s ease-in-out ${delay}s infinite`,
+        transformOrigin: "bottom",
+      }} />
+    ))}
+  </div>
+);
+
+export default function ExplorerMobile({ current, chains, history, onSelect, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
   const [selected, setSelected] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -42,18 +55,33 @@ export default function ExplorerMobile({ current, chains, history, onSelect, str
           <div style={{ fontSize: "18px", fontWeight: "700", letterSpacing: "0.05em", color: "#c9a96e", lineHeight: 1 }}>歌词接龙</div>
           <div style={{ fontSize: "9px", letterSpacing: "0.15em", color: "rgba(240,230,211,0.3)", textTransform: "uppercase", marginTop: "2px" }}>Lyric Chain Explorer</div>
         </div>
-        <div style={{ display: "flex", gap: "2px", background: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "3px", border: "1px solid rgba(255,255,255,0.06)" }}>
-          {strictnessModes.map(mode => (
-            <button key={mode.id} onClick={() => onStrictnessChange(mode.id)} style={{
-              padding: "5px 10px", borderRadius: "6px", border: "none", cursor: "pointer",
-              fontSize: "12px", fontFamily: "inherit", transition: "all 0.2s",
-              background: strictness === mode.id ? "rgba(201,169,110,0.2)" : "transparent",
-              color: strictness === mode.id ? "#c9a96e" : "rgba(240,230,211,0.4)",
-              fontWeight: strictness === mode.id ? "600" : "400",
-            }}>
-              {mode.label}
-            </button>
-          ))}
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "2px", background: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "3px", border: "1px solid rgba(255,255,255,0.06)" }}>
+            {strictnessModes.map(mode => (
+              <button key={mode.id} onClick={() => onStrictnessChange(mode.id)} style={{
+                padding: "5px 10px", borderRadius: "6px", border: "none", cursor: "pointer",
+                fontSize: "12px", fontFamily: "inherit", transition: "all 0.2s",
+                background: strictness === mode.id ? "rgba(201,169,110,0.2)" : "transparent",
+                color: strictness === mode.id ? "#c9a96e" : "rgba(240,230,211,0.4)",
+                fontWeight: strictness === mode.id ? "600" : "400",
+              }}>
+                {mode.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "2px", background: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "3px", border: "1px solid rgba(255,255,255,0.06)" }}>
+            {[{ id: "simplified", label: "简" }, { id: "traditional", label: "繁" }].map(s => (
+              <button key={s.id} onClick={() => onScriptChange(s.id)} style={{
+                padding: "5px 10px", borderRadius: "6px", border: "none", cursor: "pointer",
+                fontSize: "12px", fontFamily: "inherit", transition: "all 0.2s",
+                background: script === s.id ? "rgba(201,169,110,0.2)" : "transparent",
+                color: script === s.id ? "#c9a96e" : "rgba(240,230,211,0.4)",
+                fontWeight: script === s.id ? "600" : "400",
+              }}>
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -82,8 +110,8 @@ export default function ExplorerMobile({ current, chains, history, onSelect, str
                   {i < history.length - 1 && <div style={{ width: "1px", flex: 1, minHeight: "24px", background: "rgba(201,169,110,0.1)" }} />}
                 </div>
                 <div style={{ paddingBottom: "10px" }}>
-                  <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.5)" }}>{item.text}</div>
-                  <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.25)", marginTop: "1px" }}>{item.song} · {item.artist}</div>
+                  <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.5)" }}>{convert(item.text)}</div>
+                  <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.25)", marginTop: "1px" }}>{convert(item.song)} · {convert(item.artist)}</div>
                 </div>
               </div>
             ))}
@@ -101,23 +129,23 @@ export default function ExplorerMobile({ current, chains, history, onSelect, str
         }}>
           <div style={{ position: "absolute", top: "10px", left: "16px", fontSize: "50px", color: "rgba(201,169,110,0.07)", lineHeight: 1, userSelect: "none" }}>「</div>
           <div style={{ fontSize: "28px", fontWeight: "700", letterSpacing: "0.12em", textAlign: "center", lineHeight: 1.4, marginBottom: "16px", position: "relative", zIndex: 1 }}>
-            {current.text.split("").map((char, i) => (
+            {convert(current.text).split("").map((char, i, arr) => (
               <span key={i} style={{
-                color: i === current.text.length - 1 ? "#c9a96e" : "#f0e6d3",
-                textShadow: i === current.text.length - 1 ? "0 0 16px rgba(201,169,110,0.5)" : "none",
+                color: i === arr.length - 1 ? "#c9a96e" : "#f0e6d3",
+                textShadow: i === arr.length - 1 ? "0 0 16px rgba(201,169,110,0.5)" : "none",
               }}>{char}</span>
             ))}
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "16px" }}>
             <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "linear-gradient(135deg, #c9a96e, #8b6914)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>♪</div>
             <div>
-              <div style={{ fontSize: "13px", fontWeight: "600" }}>{current.song}</div>
-              <div style={{ fontSize: "11px", color: "rgba(240,230,211,0.4)" }}>{current.artist} · {current.year}</div>
+              <div style={{ fontSize: "13px", fontWeight: "600" }}>{convert(current.song)}</div>
+              <div style={{ fontSize: "11px", color: "rgba(240,230,211,0.4)" }}>{convert(current.artist)} · {current.year}</div>
             </div>
           </div>
           <div style={{ padding: "8px 14px", background: "rgba(201,169,110,0.08)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "12px", color: "rgba(240,230,211,0.45)" }}>
             <span>Chains from</span>
-            <span style={{ fontSize: "20px", fontWeight: "700", color: "#c9a96e", letterSpacing: "0.1em" }}>{current.end_char}</span>
+            <span style={{ fontSize: "20px", fontWeight: "700", color: "#c9a96e", letterSpacing: "0.1em" }}>{convert(current.end_char)}</span>
             <span style={{ fontFamily: "monospace", fontSize: "10px", color: "rgba(201,169,110,0.55)" }}>({current.end_pinyin})</span>
           </div>
         </div>
@@ -126,9 +154,18 @@ export default function ExplorerMobile({ current, chains, history, onSelect, str
 
         {/* Chain options */}
         <div>
-          <div style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.2)", textTransform: "uppercase", marginBottom: "10px" }}>Continue the chain</div>
+          <div style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.2)", textTransform: "uppercase", marginBottom: "10px", display: "flex", justifyContent: "space-between" }}>
+            <span>Continue the chain</span>
+            {!chainsLoading && <span style={{ color: "rgba(201,169,110,0.5)" }}>{chains.length} match{chains.length !== 1 ? "es" : ""}</span>}
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {chains.map(chain => (
+            {chainsLoading ? <EqLoader /> : chains.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0" }}>
+                <div style={{ fontSize: "24px", marginBottom: "8px", letterSpacing: "0.3em", color: "rgba(201,169,110,0.3)" }}>♪ · · ·</div>
+                <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.35)", letterSpacing: "0.05em" }}>The chain ends here</div>
+                <div style={{ fontSize: "10px", marginTop: "4px", color: "rgba(240,230,211,0.2)" }}>Try 拼音 or 无声调 to find more connections</div>
+              </div>
+            ) : chains.map(chain => (
               <button key={chain.id} onClick={() => handleSelect(chain)} style={{
                 background: selected === chain.id ? "rgba(201,169,110,0.15)" : "rgba(255,255,255,0.03)",
                 border: selected === chain.id ? "1px solid rgba(201,169,110,0.5)" : "1px solid rgba(255,255,255,0.07)",
@@ -138,13 +175,13 @@ export default function ExplorerMobile({ current, chains, history, onSelect, str
                 transform: selected === chain.id ? "scale(0.98)" : "scale(1)",
               }}>
                 <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(201,169,110,0.1)", border: "1px solid rgba(201,169,110,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: "700", color: "#c9a96e", flexShrink: 0 }}>
-                  {chain.start_char}
+                  {convert(chain.start_char)}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: "14px", color: "#f0e6d3", marginBottom: "2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    <span style={{ color: "#c9a96e" }}>{chain.line[0]}</span>{chain.line.slice(1)}
+                    <span style={{ color: "#c9a96e" }}>{convert(chain.line[0])}</span>{convert(chain.line.slice(1))}
                   </div>
-                  <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.35)" }}>{chain.song} · {chain.artist}</div>
+                  <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.35)" }}>{convert(chain.song)} · {convert(chain.artist)}</div>
                 </div>
                 <div style={{ fontSize: "9px", color: "rgba(240,230,211,0.2)", flexShrink: 0, textAlign: "right" }}>
                   <div style={{ fontSize: "14px", color: "rgba(201,169,110,0.5)", fontWeight: "600" }}>{chain.connections}</div>

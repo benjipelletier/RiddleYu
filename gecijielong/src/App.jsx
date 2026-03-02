@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import ExplorerDesktop from "./components/ExplorerDesktop";
 import ExplorerMobile from "./components/ExplorerMobile";
+import useConverter from "./hooks/useConverter";
 
 export default function App() {
   const [strictness, setStrictness] = useState("pinyin");
+  const [script, setScript] = useState("simplified");
   const [history, setHistory] = useState([]);
   const [current, setCurrent] = useState(null);
   const [chains, setChains] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [chainsLoading, setChainsLoading] = useState(false);
+  const convert = useConverter(script);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -28,9 +32,10 @@ export default function App() {
 
   useEffect(() => {
     if (!current) return;
+    setChainsLoading(true);
     fetch(`/api/chains?line_id=${current.id}&mode=${strictness}`)
       .then(r => r.json())
-      .then(data => setChains(data.chains));
+      .then(data => { setChains(data.chains); setChainsLoading(false); });
   }, [current, strictness]);
 
   const handleSelect = (chain) => {
@@ -44,6 +49,6 @@ export default function App() {
     </div>
   );
 
-  const props = { current, chains, history, onSelect: handleSelect, strictness, onStrictnessChange: setStrictness };
+  const props = { current, chains, history, onSelect: handleSelect, strictness, onStrictnessChange: setStrictness, script, onScriptChange: setScript, convert, chainsLoading };
   return isMobile ? <ExplorerMobile {...props} /> : <ExplorerDesktop {...props} />;
 }

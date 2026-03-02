@@ -1,15 +1,15 @@
 import { neon } from "@neondatabase/serverless";
-import pinyin from "pinyin";
+import { pinyin, Pinyin } from "pinyin";
 
 const sql = neon(process.env.DATABASE_URL);
 
 function getPinyin(char) {
-  const result = pinyin(char, { style: pinyin.STYLE_TONE2, heteronym: false });
+  const result = pinyin(char, { style: "tone", heteronym: false });
   return result[0]?.[0] || "";
 }
 
 function getPinyinToneless(char) {
-  const result = pinyin(char, { style: pinyin.STYLE_NORMAL, heteronym: false });
+  const result = pinyin(char, { style: "normal", heteronym: false });
   return result[0]?.[0] || "";
 }
 
@@ -20,7 +20,7 @@ function parseLRC(lrc) {
     if (match) {
       const mins = parseInt(match[1]);
       const secs = parseFloat(match[2]);
-      const text = match[3].trim();
+      const text = match[3].replace(/<[^>]+>/g, "").trim();
       if (text) {
         lines.push({ text, timestamp_ms: Math.round((mins * 60 + secs) * 1000) });
       }
@@ -30,10 +30,18 @@ function parseLRC(lrc) {
 }
 
 async function fetchSongLyrics(song) {
-  const url = `https://lrclib.net/api/search?track_name=${encodeURIComponent(song.title)}&artist_name=${encodeURIComponent(song.artist)}`;
-  const res = await fetch(url, { headers: { "User-Agent": "gecijielong/1.0 (benji.codes)" } });
-  const results = await res.json();
-  return results[0] || null;
+  // First try: title + artist
+  const url1 = `https://lrclib.net/api/search?track_name=${encodeURIComponent(song.title)}&artist_name=${encodeURIComponent(song.artist)}`;
+  const res1 = await fetch(url1, { headers: { "User-Agent": "gecijielong/1.0 (benji.codes)" } });
+  const results1 = await res1.json();
+  if (results1.length > 0) return results1[0];
+
+  // Fallback: title only, pick first result that has Chinese characters in the track name
+  const url2 = `https://lrclib.net/api/search?track_name=${encodeURIComponent(song.title)}`;
+  const res2 = await fetch(url2, { headers: { "User-Agent": "gecijielong/1.0 (benji.codes)" } });
+  const results2 = await res2.json();
+  const match = results2.find(r => /[\u4e00-\u9fff]/.test(r.trackName) && (r.syncedLyrics || r.plainLyrics));
+  return match || null;
 }
 
 async function processSong(song) {
@@ -91,7 +99,7 @@ async function processSong(song) {
 }
 
 async function main() {
-  const songs = await sql`SELECT * FROM songs WHERE lrclib_status = 'pending' LIMIT 50`;
+  const songs = await sql`SELECT * FROM songs WHERE lrclib_status = 'pending'`;
   console.log(`Processing ${songs.length} songs...`);
 
   for (const song of songs) {

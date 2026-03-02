@@ -6,7 +6,20 @@ const strictnessModes = [
   { id: "toneless", label: "无声调", desc: "Toneless" },
 ];
 
-export default function ExplorerDesktop({ current, chains, history, onSelect, strictness, onStrictnessChange }) {
+const EqLoader = () => (
+  <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "5px", height: "40px", padding: "8px 0" }}>
+    {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (
+      <div key={i} style={{
+        width: "4px", height: "100%", borderRadius: "2px",
+        background: "rgba(201,169,110,0.5)",
+        animation: `eq-bounce 0.8s ease-in-out ${delay}s infinite`,
+        transformOrigin: "bottom",
+      }} />
+    ))}
+  </div>
+);
+
+export default function ExplorerDesktop({ current, chains, history, onSelect, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
   const [selected, setSelected] = useState(null);
 
   const handleSelect = (chain) => {
@@ -24,7 +37,6 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
       display: "flex",
       flexDirection: "column",
       position: "relative",
-      overflow: "hidden",
     }}>
       {/* Ambient glow effects */}
       <div style={{
@@ -41,49 +53,27 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
       }} />
 
       {/* Header */}
-      <header style={{
-        padding: "24px 40px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottom: "1px solid rgba(240,230,211,0.06)",
-      }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-          <span style={{ fontSize: "22px", fontWeight: "700", letterSpacing: "0.05em", color: "#c9a96e" }}>
-            歌词接龙
-          </span>
-          <span style={{ fontSize: "11px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.35)", textTransform: "uppercase" }}>
-            Lyric Chain Explorer
-          </span>
-        </div>
-
-        {/* Strictness toggle */}
+      <header style={{ borderBottom: "1px solid rgba(240,230,211,0.06)" }}>
         <div style={{
-          display: "flex", gap: "4px",
-          background: "rgba(255,255,255,0.04)",
-          borderRadius: "10px", padding: "4px",
-          border: "1px solid rgba(255,255,255,0.06)",
+          maxWidth: "1200px", margin: "0 auto", width: "100%",
+          padding: "24px 40px", display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          {strictnessModes.map(mode => (
-            <button key={mode.id} onClick={() => onStrictnessChange(mode.id)} title={mode.desc} style={{
-              padding: "6px 16px", borderRadius: "7px", border: "none", cursor: "pointer",
-              fontSize: "13px", fontFamily: "inherit", transition: "all 0.2s",
-              background: strictness === mode.id ? "rgba(201,169,110,0.2)" : "transparent",
-              color: strictness === mode.id ? "#c9a96e" : "rgba(240,230,211,0.4)",
-              fontWeight: strictness === mode.id ? "600" : "400",
-            }}>
-              {mode.label}
-            </button>
-          ))}
+          <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
+            <span style={{ fontSize: "22px", fontWeight: "700", letterSpacing: "0.05em", color: "#c9a96e" }}>
+              歌词接龙
+            </span>
+            <span style={{ fontSize: "11px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.35)", textTransform: "uppercase" }}>
+              Lyric Chain Explorer
+            </span>
+          </div>
+          <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.3)", letterSpacing: "0.05em" }}>Vibecoded with ♥ by <a href="https://instagram.com/benjipelletier" target="_blank" rel="noreferrer" style={{ color: "rgba(240,230,211,0.3)", textDecoration: "none" }}>笨鸡</a></div>
         </div>
-
-        <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.3)", letterSpacing: "0.05em" }}>benji.codes</div>
       </header>
 
       <div style={{ display: "flex", flex: 1, maxWidth: "1200px", margin: "0 auto", width: "100%", padding: "40px" }}>
 
         {/* Left: History */}
-        <div style={{ width: "220px", flexShrink: 0, paddingRight: "32px" }}>
+        <div style={{ width: "220px", flexShrink: 0, paddingRight: "32px", position: "sticky", top: "40px", alignSelf: "flex-start" }}>
           <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "20px" }}>
             Chain History
           </div>
@@ -97,8 +87,8 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
                   )}
                 </div>
                 <div style={{ paddingBottom: "16px" }}>
-                  <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.5)", lineHeight: 1.4 }}>{item.text}</div>
-                  <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.25)", marginTop: "2px" }}>{item.song} · {item.artist}</div>
+                  <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.5)", lineHeight: 1.4 }}>{convert(item.text)}</div>
+                  <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.25)", marginTop: "2px" }}>{convert(item.song)} · {convert(item.artist)}</div>
                 </div>
               </div>
             ))}
@@ -121,23 +111,23 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
           }}>
             <div style={{ position: "absolute", top: "16px", left: "24px", fontSize: "60px", color: "rgba(201,169,110,0.08)", lineHeight: 1, userSelect: "none" }}>「</div>
             <div style={{ fontSize: "32px", fontWeight: "700", letterSpacing: "0.15em", textAlign: "center", lineHeight: 1.4, color: "#f0e6d3", position: "relative", zIndex: 1, marginBottom: "20px" }}>
-              {current.text.split("").map((char, i) => (
+              {convert(current.text).split("").map((char, i, arr) => (
                 <span key={i} style={{
-                  color: i === current.text.length - 1 ? "#c9a96e" : "#f0e6d3",
-                  textShadow: i === current.text.length - 1 ? "0 0 20px rgba(201,169,110,0.5)" : "none",
+                  color: i === arr.length - 1 ? "#c9a96e" : "#f0e6d3",
+                  textShadow: i === arr.length - 1 ? "0 0 20px rgba(201,169,110,0.5)" : "none",
                 }}>{char}</span>
               ))}
             </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
               <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "linear-gradient(135deg, #c9a96e, #8b6914)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>♪</div>
               <div>
-                <div style={{ fontSize: "14px", fontWeight: "600", color: "#f0e6d3" }}>{current.song}</div>
-                <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.45)" }}>{current.artist} · {current.year}</div>
+                <div style={{ fontSize: "14px", fontWeight: "600", color: "#f0e6d3" }}>{convert(current.song)}</div>
+                <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.45)" }}>{convert(current.artist)} · {current.year}</div>
               </div>
             </div>
             <div style={{ marginTop: "24px", padding: "10px 16px", background: "rgba(201,169,110,0.08)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", fontSize: "13px", color: "rgba(240,230,211,0.5)" }}>
               <span>Chains from</span>
-              <span style={{ fontSize: "20px", fontWeight: "700", color: "#c9a96e", letterSpacing: "0.1em" }}>{current.end_char}</span>
+              <span style={{ fontSize: "20px", fontWeight: "700", color: "#c9a96e", letterSpacing: "0.1em" }}>{convert(current.end_char)}</span>
               <span style={{ fontSize: "11px", color: "rgba(201,169,110,0.6)", fontFamily: "monospace" }}>({current.end_pinyin})</span>
             </div>
           </div>
@@ -146,8 +136,17 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
 
           {/* Chain options */}
           <div style={{ width: "100%", maxWidth: "480px", display: "flex", flexDirection: "column", gap: "10px" }}>
-            <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "4px" }}>Continue the chain →</div>
-            {chains.map(chain => (
+            <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "4px", display: "flex", justifyContent: "space-between" }}>
+              <span>Continue the chain →</span>
+              {!chainsLoading && <span style={{ color: "rgba(201,169,110,0.5)" }}>{chains.length} match{chains.length !== 1 ? "es" : ""}</span>}
+            </div>
+            {chainsLoading ? <EqLoader /> : chains.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div style={{ fontSize: "28px", marginBottom: "10px", letterSpacing: "0.3em", color: "rgba(201,169,110,0.3)" }}>♪ · · ·</div>
+                <div style={{ fontSize: "13px", color: "rgba(240,230,211,0.35)", letterSpacing: "0.05em" }}>The chain ends here</div>
+                <div style={{ fontSize: "11px", marginTop: "6px", color: "rgba(240,230,211,0.2)" }}>Try 拼音 or 无声调 to find more connections</div>
+              </div>
+            ) : chains.map(chain => (
               <button key={chain.id} onClick={() => handleSelect(chain)} style={{
                 background: selected === chain.id ? "rgba(201,169,110,0.15)" : "rgba(255,255,255,0.03)",
                 border: selected === chain.id ? "1px solid rgba(201,169,110,0.5)" : "1px solid rgba(255,255,255,0.07)",
@@ -157,13 +156,13 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
                 transform: selected === chain.id ? "scale(0.99)" : "scale(1)",
               }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: "10px", background: "rgba(201,169,110,0.1)", border: "1px solid rgba(201,169,110,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", fontWeight: "700", color: "#c9a96e", flexShrink: 0 }}>
-                  {chain.start_char}
+                  {convert(chain.start_char)}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: "15px", color: "#f0e6d3", marginBottom: "3px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    <span style={{ color: "#c9a96e" }}>{chain.line[0]}</span>{chain.line.slice(1)}
+                    <span style={{ color: "#c9a96e" }}>{convert(chain.line[0])}</span>{convert(chain.line.slice(1))}
                   </div>
-                  <div style={{ fontSize: "11px", color: "rgba(240,230,211,0.35)" }}>{chain.song} · {chain.artist}</div>
+                  <div style={{ fontSize: "11px", color: "rgba(240,230,211,0.35)" }}>{convert(chain.song)} · {convert(chain.artist)}</div>
                 </div>
                 <div style={{ fontSize: "10px", color: "rgba(240,230,211,0.25)", flexShrink: 0, textAlign: "right" }}>
                   <div style={{ fontSize: "14px", color: "rgba(201,169,110,0.5)", fontWeight: "600" }}>{chain.connections}</div>
@@ -175,22 +174,54 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
         </div>
 
         {/* Right: Info panel */}
-        <div style={{ width: "200px", flexShrink: 0, paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={{ width: "200px", flexShrink: 0, paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "20px", position: "sticky", top: "40px", alignSelf: "flex-start" }}>
           <div>
-            <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "12px" }}>Strictness Mode</div>
-            <div style={{ fontSize: "13px", color: "rgba(240,230,211,0.5)", lineHeight: 1.6 }}>
+            <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "12px" }}>Chaining Mode</div>
+            <div style={{
+              display: "flex", flexDirection: "row", gap: "4px",
+              background: "rgba(255,255,255,0.04)",
+              borderRadius: "10px", padding: "4px",
+              border: "1px solid rgba(255,255,255,0.06)",
+              marginBottom: "12px",
+            }}>
+              {strictnessModes.map(mode => (
+                <button key={mode.id} onClick={() => onStrictnessChange(mode.id)} style={{
+                  flex: 1, padding: "6px 0", borderRadius: "7px", border: "none", cursor: "pointer",
+                  textAlign: "center",
+                  fontSize: "13px", fontFamily: "inherit", transition: "all 0.2s",
+                  background: strictness === mode.id ? "rgba(201,169,110,0.2)" : "transparent",
+                  color: strictness === mode.id ? "#c9a96e" : "rgba(240,230,211,0.4)",
+                  fontWeight: strictness === mode.id ? "600" : "400",
+                }}>
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.45)", lineHeight: 1.6 }}>
               {strictness === "char" && "Exact character match only"}
               {strictness === "pinyin" && "Same pronunciation with tone (e.g. qū → 曲)"}
               {strictness === "toneless" && "Any matching syllable regardless of tone (e.g. qu → 曲去缺...)"}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "12px" }}>Current Song</div>
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "14px" }}>
-              <div style={{ fontSize: "16px", fontWeight: "700", color: "#f0e6d3", marginBottom: "4px" }}>{current.song}</div>
-              <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.45)", marginBottom: "2px" }}>{current.artist}</div>
-              <div style={{ fontSize: "11px", color: "rgba(240,230,211,0.25)" }}>{current.album}</div>
-              <div style={{ fontSize: "11px", color: "rgba(240,230,211,0.2)", marginTop: "2px" }}>{current.year}</div>
+            <div style={{ fontSize: "10px", letterSpacing: "0.2em", color: "rgba(240,230,211,0.25)", textTransform: "uppercase", marginBottom: "12px" }}>Script</div>
+            <div style={{
+              display: "flex", flexDirection: "row", gap: "4px",
+              background: "rgba(255,255,255,0.04)",
+              borderRadius: "10px", padding: "4px",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}>
+              {[{ id: "simplified", label: "简" }, { id: "traditional", label: "繁" }].map(s => (
+                <button key={s.id} onClick={() => onScriptChange(s.id)} style={{
+                  flex: 1, padding: "6px 0", borderRadius: "7px", border: "none", cursor: "pointer",
+                  textAlign: "center", fontSize: "13px", fontFamily: "inherit", transition: "all 0.2s",
+                  background: script === s.id ? "rgba(201,169,110,0.2)" : "transparent",
+                  color: script === s.id ? "#c9a96e" : "rgba(240,230,211,0.4)",
+                  fontWeight: script === s.id ? "600" : "400",
+                }}>
+                  {s.label}
+                </button>
+              ))}
             </div>
           </div>
           <div>
