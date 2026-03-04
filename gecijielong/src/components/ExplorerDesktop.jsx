@@ -19,7 +19,7 @@ const EqLoader = () => (
   </div>
 );
 
-export default function ExplorerDesktop({ current, chains, history, onSelect, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
+export default function ExplorerDesktop({ current, chains, history, onSelect, onReset, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
   const [selected, setSelected] = useState(null);
 
   const handleSelect = (chain) => {
@@ -66,7 +66,13 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, st
               Lyric Chain Explorer
             </span>
           </div>
-          <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.3)", letterSpacing: "0.05em" }}>Vibecoded with ♥ by <a href="https://instagram.com/benjipelletier" target="_blank" rel="noreferrer" style={{ color: "rgba(240,230,211,0.3)", textDecoration: "none" }}>笨鸡</a></div>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <button onClick={onReset} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(240,230,211,0.3)", letterSpacing: "0.05em", fontFamily: "inherit", padding: 0, transition: "color 0.2s" }}
+              onMouseEnter={e => e.target.style.color = "#c9a96e"}
+              onMouseLeave={e => e.target.style.color = "rgba(240,230,211,0.3)"}
+            >← New chain</button>
+            <div style={{ fontSize: "12px", color: "rgba(240,230,211,0.3)", letterSpacing: "0.05em" }}>Vibecoded with ♥ by <a href="https://instagram.com/benjipelletier" target="_blank" rel="noreferrer" style={{ color: "rgba(240,230,211,0.3)", textDecoration: "none" }}>笨鸡</a></div>
+          </div>
         </div>
       </header>
 
