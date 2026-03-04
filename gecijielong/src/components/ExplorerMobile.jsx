@@ -19,7 +19,7 @@ const EqLoader = () => (
   </div>
 );
 
-export default function ExplorerMobile({ current, chains, history, onSelect, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
+export default function ExplorerMobile({ current, chains, history, onSelect, onReset, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
   const [selected, setSelected] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -53,7 +53,9 @@ export default function ExplorerMobile({ current, chains, history, onSelect, str
       }}>
         <div>
           <div style={{ fontSize: "18px", fontWeight: "700", letterSpacing: "0.05em", color: "#c9a96e", lineHeight: 1 }}>歌词接龙</div>
-          <div style={{ fontSize: "9px", letterSpacing: "0.15em", color: "rgba(240,230,211,0.3)", textTransform: "uppercase", marginTop: "2px" }}>Lyric Chain Explorer</div>
+          <button onClick={onReset} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "9px", letterSpacing: "0.15em", color: "rgba(240,230,211,0.3)", textTransform: "uppercase", marginTop: "2px", fontFamily: "inherit", padding: 0, display: "block" }}>
+            ← New chain
+          </button>
         </div>
         <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
           <div style={{ display: "flex", gap: "2px", background: "rgba(255,255,255,0.04)", borderRadius: "8px", padding: "3px", border: "1px solid rgba(255,255,255,0.06)" }}>
