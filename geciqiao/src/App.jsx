@@ -26,10 +26,21 @@ async function fetchTrackInfo(spotifyUrl) {
 
 async function fetchLyrics(title, artist) {
   // lrclib.net is CORS-enabled, no API key needed
-  const params = new URLSearchParams({ track_name: title, artist_name: artist })
+  const params = new URLSearchParams({ track_name: title })
+  if (artist) params.set('artist_name', artist)
   const res = await fetch(`https://lrclib.net/api/search?${params}`)
   if (!res.ok) throw new Error('Could not reach lrclib.net')
-  const results = await res.json()
+  let results = await res.json()
+
+  // If no results with artist, retry without (artist name may differ between
+  // Spotify and lrclib — e.g. Chinese vs romanised spelling)
+  if (!results.length && artist) {
+    const retryRes = await fetch(
+      `https://lrclib.net/api/search?${new URLSearchParams({ track_name: title })}`
+    )
+    if (retryRes.ok) results = await retryRes.json()
+  }
+
   if (!results.length) return null
 
   // Prefer results with synced lyrics; fall back to plain
@@ -493,7 +504,7 @@ export default function App() {
           <div style={S.errorTitle}>Lyrics not found</div>
           {track && (
             <div style={{ ...S.errorMsg, fontStyle: 'italic' }}>
-              "{track.title}" by {track.artist}
+              "{track.title}"{track.artist ? ` by ${track.artist}` : ''}
             </div>
           )}
           <div style={S.errorMsg}>
