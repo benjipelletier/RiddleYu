@@ -343,6 +343,23 @@ export default function App() {
   const [inputUrl, setInputUrl] = useState('')
   const [toast, setToast] = useState('')
   const [btnPressed, setBtnPressed] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState(null)
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setInstallPrompt(null)
+  }
 
   const showToast = useCallback((msg) => {
     setToast(msg)
@@ -438,10 +455,26 @@ export default function App() {
               Find Lyrics →
             </button>
           </div>
-          <div style={S.instructions}>
-            <strong style={{ color: 'rgba(240,230,211,0.7)' }}>Share from Spotify:</strong>
-            {' '}Install this site as an app (Add to Home Screen), then use Spotify's Share button — 歌词桥 will appear as a share target.
-          </div>
+          {installPrompt ? (
+            <button
+              style={{
+                ...S.goBtn,
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+              }}
+              onClick={handleInstall}
+            >
+              <span>⊕</span> Add to Home Screen
+            </button>
+          ) : (
+            <div style={S.instructions}>
+              <strong style={{ color: 'rgba(240,230,211,0.7)' }}>Share from Spotify:</strong>
+              {' '}Install this site as an app (Add to Home Screen), then use Spotify's Share button — 歌词桥 will appear as a share target.
+            </div>
+          )}
         </div>
       )}
 
