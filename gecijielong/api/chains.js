@@ -42,20 +42,20 @@ export default async function handler(req, res) {
           'preview_url', s.preview_url,
           'spotify_url', s.spotify_url
         ) as to_line,
-        (SELECT COUNT(*) FROM chains c2 WHERE c2.from_line_id = ll.id AND c2.match_type = ${mode}) as connections
+        (SELECT COUNT(*) FROM chains c2 WHERE c2.from_line_id = ll.id AND c2.match_type = ${mode}) as connections,
+        (
+          (${mode} = 'char' AND ll.end_char = ll.start_char) OR
+          (${mode} = 'pinyin' AND ll.end_pinyin = ll.start_pinyin) OR
+          (${mode} = 'toneless' AND ll.end_pinyin_toneless = ll.start_pinyin_toneless)
+        ) as is_loop
       FROM chains c
       JOIN lyric_lines ll ON ll.id = c.to_line_id
       JOIN songs s ON s.id = ll.song_id
       WHERE c.from_line_id = ${line_id}
         AND c.match_type = ${mode}
-        AND NOT (
-          (${mode} = 'char' AND ll.end_char = ll.start_char) OR
-          (${mode} = 'pinyin' AND ll.end_pinyin = ll.start_pinyin) OR
-          (${mode} = 'toneless' AND ll.end_pinyin_toneless = ll.start_pinyin_toneless)
-        )
       ORDER BY s.id, connections DESC
     ) deduped
-    ORDER BY connections DESC
+    ORDER BY is_loop ASC, connections DESC
     LIMIT 20
   `;
 
