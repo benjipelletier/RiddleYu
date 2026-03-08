@@ -20,7 +20,7 @@ const EqLoader = () => (
   </div>
 );
 
-export default function ExplorerDesktop({ current, chains, history, onSelect, onReset, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
+export default function ExplorerDesktop({ current, chains, history, onSelect, onBack, onReset, strictness, onStrictnessChange, script, onScriptChange, convert, chainsLoading }) {
   const [selected, setSelected] = useState(null);
   const { playingUrl, toggle } = useAudioPreview();
   const visitedIds = new Set(history.map(h => h.id));
@@ -70,6 +70,12 @@ export default function ExplorerDesktop({ current, chains, history, onSelect, on
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            {history.length > 0 && (
+              <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(240,230,211,0.45)", letterSpacing: "0.05em", fontFamily: "inherit", padding: 0, transition: "color 0.2s" }}
+                onMouseEnter={e => e.target.style.color = "#c9a96e"}
+                onMouseLeave={e => e.target.style.color = "rgba(240,230,211,0.45)"}
+              >↩ Back</button>
+            )}
             <button onClick={onReset} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "rgba(240,230,211,0.3)", letterSpacing: "0.05em", fontFamily: "inherit", padding: 0, transition: "color 0.2s" }}
               onMouseEnter={e => e.target.style.color = "#c9a96e"}
               onMouseLeave={e => e.target.style.color = "rgba(240,230,211,0.3)"}
