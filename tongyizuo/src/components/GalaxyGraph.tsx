@@ -39,6 +39,7 @@ export default function GalaxyGraph() {
   const graphDataRef = useRef(graphData);
   const selectedNodeIdRef = useRef<string | null>(null);
   const hoveredNodeIdRef = useRef<string | null>(null);
+  const selectedAtRef = useRef<number>(0);
   const [hoveredStarter, setHoveredStarter] = useState<string | null>(null);
   const loadMoreRef = useRef(loadMore);
   const hasMoreRef = useRef(hasMore);
@@ -48,7 +49,10 @@ export default function GalaxyGraph() {
   // Keep refs in sync
   useEffect(() => { clusterMetasRef.current = clusterMetas; }, [clusterMetas]);
   useEffect(() => { graphDataRef.current = graphData; }, [graphData]);
-  useEffect(() => { selectedNodeIdRef.current = selectedNodeId; }, [selectedNodeId]);
+  useEffect(() => {
+    selectedNodeIdRef.current = selectedNodeId;
+    if (selectedNodeId) selectedAtRef.current = Date.now();
+  }, [selectedNodeId]);
   useEffect(() => { loadMoreRef.current = loadMore; }, [loadMore]);
   useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
   useEffect(() => { loadingMoreRef.current = loadingMore; }, [loadingMore]);
@@ -175,6 +179,7 @@ export default function GalaxyGraph() {
   // Gloss pills drawn after nodes
   const onRenderFramePost = useCallback((ctx: CanvasRenderingContext2D, globalScale: number) => {
     const sel = selectedNodeIdRef.current;
+    const fadeAlpha = Math.min(1, (Date.now() - selectedAtRef.current) / 250);
     if (!sel || globalScale < 0.8) return;
 
     const links = graphDataRef.current.links as GraphLink[];
@@ -194,8 +199,8 @@ export default function GalaxyGraph() {
       const pw = tw + 8 / globalScale;
       const ph = fontSize * 1.6;
 
-      ctx.fillStyle = 'rgba(10,8,6,0.95)';
-      ctx.strokeStyle = '#d9a441';
+      ctx.fillStyle = `rgba(10,8,6,${0.95 * fadeAlpha})`;
+      ctx.strokeStyle = `rgba(217,164,65,${fadeAlpha})`;
       ctx.lineWidth = 0.8 / globalScale;
       const rx = 3 / globalScale;
       // Rounded rect
@@ -213,7 +218,7 @@ export default function GalaxyGraph() {
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = '#d9a441';
+      ctx.fillStyle = `rgba(217,164,65,${fadeAlpha})`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(glossText, mx, my);
