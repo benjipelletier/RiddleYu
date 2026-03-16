@@ -75,6 +75,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
   const [peek, setPeek] = useState<PeekState | null>(null);
   const [visited, setVisited] = useState<Set<string>>(new Set());
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+  const [exploreHover, setExploreHover] = useState(false);
 
   useEffect(() => { setVisited(loadVisited()); }, []);
 
@@ -246,13 +247,17 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
           {/* Explore CTA */}
           <button
             onClick={() => doNavigate(peek.member.simplified)}
+            onMouseEnter={() => setExploreHover(true)}
+            onMouseLeave={() => setExploreHover(false)}
             style={{
               flexShrink: 0, alignSelf: 'center',
-              background: `${peek.color}18`, border: `1px solid ${peek.color}55`,
+              background: exploreHover ? `${peek.color}28` : `${peek.color}18`,
+              border: `1px solid ${exploreHover ? peek.color + 'aa' : peek.color + '55'}`,
               borderRadius: '8px', padding: '10px 18px',
               color: peek.color, fontSize: '13px', fontFamily: 'inherit',
               cursor: 'pointer', letterSpacing: '0.06em',
-              transition: 'background 0.15s',
+              transform: exploreHover ? 'translateY(-1px)' : 'none',
+              transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
             }}>
             探索 →
           </button>
@@ -422,6 +427,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                       if (peek?.member.simplified === member.simplified) {
                         doNavigate(member.simplified);
                       } else {
+                        setExploreHover(false);
                         setPeek({ member, color });
                       }
                     }}
