@@ -660,7 +660,7 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    pointerEvents: 'auto',
+    pointerEvents: 'none',
     padding: '12px 24px 16px 0',
     background: 'radial-gradient(ellipse 260px 340px at 40px 60px, rgba(10,8,6,0.72) 55%, transparent 100%)',
   },
@@ -694,6 +694,7 @@ const s: Record<string, React.CSSProperties> = {
     maxHeight: '280px',
     overflowY: 'auto' as const,
     scrollbarWidth: 'none' as const,
+    pointerEvents: 'auto' as const,
   },
   clusterRow: {
     display: 'flex',
