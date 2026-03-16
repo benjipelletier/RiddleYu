@@ -26,7 +26,7 @@ interface Props {
   activeClusterIdx?: number | null;
 }
 
-const MAX_MEMBERS = 7;
+export const MAX_MEMBERS = 7;
 
 const TONE_COLORS: Record<string, string> = {
   '1': '#d94141',  // 1st tone — rose
@@ -376,6 +376,7 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                 const pos = memberPositions[mi];
                 const isClicked = clickedWord === member.simplified;
                 const isPeeked = peek?.member.simplified === member.simplified;
+                const nodeKey = `${ci}-${member.simplified}-${mi}`;
                 const isVisited = visited.has(member.simplified);
                 const nodeDelay = clusterBaseDelay + mi * 30;
                 const fSize = member.simplified.length <= 1 ? nodeR * 0.88
@@ -387,7 +388,7 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                   .filter(Boolean)
                   .filter((g, i, a) => a.indexOf(g) === i);
                 return (
-                  <g key={member.simplified}
+                  <g key={nodeKey}
                     onClick={() => {
                       setTooltip(null);
                       if (peek?.member.simplified === member.simplified) {

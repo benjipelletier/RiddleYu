@@ -3,11 +3,27 @@
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ClusterResponse } from '../../../../lib/types';
-import SynonymGraph, { shortGloss } from '../../../components/SynonymGraph';
+import SynonymGraph, { shortGloss, MAX_MEMBERS } from '../../../components/SynonymGraph';
 import ChallengeMode from '../../../components/ChallengeMode';
 import { WORD_COLORS } from '../../../components/WordNode';
 
 type Mode = 'explore' | 'challenge';
+
+const HISTORY_KEY = 'tongyizuo:history';
+const MAX_HISTORY = 12;
+function loadHistory(): string[] {
+  if (typeof window === 'undefined') return [];
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+function addToHistory(word: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const h = loadHistory().filter(w => w !== word);
+    h.unshift(word);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0, MAX_HISTORY)));
+  } catch { /* ignore */ }
+}
 
 export default function ClusterPage({ params }: { params: Promise<{ word: string }> }) {
   const { word } = use(params);
@@ -24,6 +40,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [navSearch, setNavSearch] = useState('');
   const [navOpen, setNavOpen] = useState(false);
   const navInputRef = useRef<HTMLInputElement>(null);
+  const [history, setHistory] = useState<string[]>([]);
 
   function handleNavSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +54,11 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   useEffect(() => {
     if (navOpen) setTimeout(() => navInputRef.current?.focus(), 50);
   }, [navOpen]);
+
+  useEffect(() => {
+    addToHistory(simplified);
+    setHistory(loadHistory());
+  }, [simplified]);
 
   useEffect(() => {
     setLoading(true);
@@ -134,6 +156,35 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
         )}
       </nav>
 
+      {/* History strip */}
+      {history.length >= 2 && (
+        <div style={s.historyStrip}>
+          <span style={s.historyLabel}>history</span>
+          <div style={s.historyItems}>
+            {history.map((w) => {
+              const isCurrent = w === simplified;
+              return (
+                <button
+                  key={w}
+                  style={{
+                    ...s.historyPill,
+                    color: isCurrent ? '#d9a441' : 'rgba(217,164,65,0.38)',
+                    background: isCurrent ? 'rgba(217,164,65,0.1)' : 'transparent',
+                    borderColor: isCurrent ? 'rgba(217,164,65,0.35)' : 'rgba(217,164,65,0.12)',
+                    cursor: isCurrent ? 'default' : 'pointer',
+                  }}
+                  onClick={() => {
+                    if (!isCurrent) router.push(`/cluster/${encodeURIComponent(w)}?from=${encodeURIComponent(simplified)}`);
+                  }}
+                >
+                  <span className="zh">{w}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <main style={s.main}>
         {loading && (
@@ -190,7 +241,11 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                         >
                           <span style={s.clusterRowLabel}>{cl.label}</span>
                           <span style={{ ...s.clusterRowCount, color: isActive ? `${color}88` : `${color}44` }}>
-                            {cl.members.length - 1}
+                            {(() => {
+                              const total = cl.members.length - 1;
+                              const shown = Math.min(total, MAX_MEMBERS);
+                              return shown < total ? `${shown}/${total}` : `${total}`;
+                            })()}
                           </span>
                         </button>
                       );
@@ -224,12 +279,19 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                     <div style={{ ...s.collStrip, borderTopColor: `${color}22` }}>
                       <span style={{ ...s.collLabel, color: `${color}66` }}>collocations</span>
                       <div style={s.collItems}>
-                        {colls.map((c, i) => (
-                          <div key={i} style={s.collItem}>
-                            <span className="zh" style={{ ...s.collZh, color }}>{c.collocation}</span>
-                            {c.gloss && <span style={s.collGloss}>{c.gloss}</span>}
-                          </div>
-                        ))}
+                        {colls.map((c, i) => {
+                          const isChinese = /[\u4e00-\u9fff]/.test(c.collocation);
+                          return (
+                            <button
+                              key={i}
+                              style={{ ...s.collItem, cursor: isChinese ? 'pointer' : 'default', border: 'none', fontFamily: 'inherit', textAlign: 'center' as const }}
+                              onClick={() => isChinese && router.push(`/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(simplified)}`)}
+                            >
+                              <span className="zh" style={{ ...s.collZh, color }}>{c.collocation}</span>
+                              {c.gloss && <span style={s.collGloss}>{c.gloss}</span>}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -259,7 +321,11 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                         >
                           <span style={s.clusterRowLabel}>{cl.label}</span>
                           <span style={{ ...s.clusterRowCount, color: isActive ? `${color}88` : `${color}44` }}>
-                            {cl.members.length - 1}
+                            {(() => {
+                              const total = cl.members.length - 1;
+                              const shown = Math.min(total, MAX_MEMBERS);
+                              return shown < total ? `${shown}/${total}` : `${total}`;
+                            })()}
                           </span>
                         </button>
                       );
@@ -389,6 +455,40 @@ const s: Record<string, React.CSSProperties> = {
   modeBtnDisabled: {
     opacity: 0.3,
     cursor: 'default',
+  },
+  historyStrip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '6px 24px 8px',
+    borderBottom: '1px solid rgba(217,164,65,0.06)',
+    overflowX: 'auto' as const,
+    scrollbarWidth: 'none' as const,
+  },
+  historyLabel: {
+    fontSize: '9px',
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase' as const,
+    color: 'rgba(217,164,65,0.2)',
+    flexShrink: 0,
+  },
+  historyItems: {
+    display: 'flex',
+    gap: '6px',
+    alignItems: 'center',
+  },
+  historyPill: {
+    background: 'transparent',
+    border: '1px solid rgba(217,164,65,0.12)',
+    borderRadius: '16px',
+    padding: '2px 10px',
+    fontSize: '15px',
+    fontFamily: 'Noto Serif SC, serif',
+    fontWeight: 900,
+    cursor: 'pointer',
+    transition: 'color 0.15s, background 0.15s, border-color 0.15s',
+    lineHeight: 1.5,
   },
   main: {
     flex: 1,
