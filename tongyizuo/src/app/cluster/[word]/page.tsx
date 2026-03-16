@@ -42,6 +42,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [navOpen, setNavOpen] = useState(false);
   const [navHover, setNavHover] = useState(false);
   const [backHover, setBackHover] = useState(false);
+  const [fromHover, setFromHover] = useState(false);
   const [hoveredCollIdx, setHoveredCollIdx] = useState<number | null>(null);
   const [hoveredClusterIdx, setHoveredClusterIdx] = useState<number | null>(null);
   const navInputRef = useRef<HTMLInputElement>(null);
@@ -59,6 +60,18 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   useEffect(() => {
     if (navOpen) setTimeout(() => navInputRef.current?.focus(), 50);
   }, [navOpen]);
+
+  // Press '/' to open nav search
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === '/' && document.activeElement !== navInputRef.current) {
+        e.preventDefault();
+        setNavOpen(true);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     addToHistory(simplified);
@@ -118,8 +131,10 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
             <>
               <span style={s.breadcrumbSep}>/</span>
               <button
-                style={s.breadcrumbFrom}
+                style={{ ...s.breadcrumbFrom, color: fromHover ? 'rgba(217,164,65,0.8)' : 'rgba(217,164,65,0.5)' }}
                 onClick={() => router.push(`/cluster/${encodeURIComponent(fromWord)}`)}
+                onMouseEnter={() => setFromHover(true)}
+                onMouseLeave={() => setFromHover(false)}
               >
                 <span className="zh">{fromWord}</span>
               </button>
