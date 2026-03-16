@@ -91,6 +91,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
   const [visited, setVisited] = useState<Set<string>>(new Set());
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const [exploreHover, setExploreHover] = useState(false);
+  const [hoveredCollIdx, setHoveredCollIdx] = useState<number | null>(null);
 
   useEffect(() => { setVisited(loadVisited()); }, []);
 
@@ -241,7 +242,15 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                   const isChinese = /[\u4e00-\u9fff]/.test(c.collocation);
                   return (
                     <button key={i}
-                      style={{ fontSize: '13px', color: peek.color, fontFamily: 'Noto Serif SC, serif', background: `${peek.color}0d`, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${peek.color}33`, cursor: isChinese ? 'pointer' : 'default', lineHeight: 1.4 }}
+                      style={{
+                        fontSize: '13px', color: peek.color, fontFamily: 'Noto Serif SC, serif',
+                        background: hoveredCollIdx === i && isChinese ? `${peek.color}1a` : `${peek.color}0d`,
+                        padding: '2px 8px', borderRadius: '4px',
+                        border: `1px solid ${hoveredCollIdx === i && isChinese ? peek.color + '55' : peek.color + '33'}`,
+                        cursor: isChinese ? 'pointer' : 'default', lineHeight: 1.4,
+                        transform: hoveredCollIdx === i && isChinese ? 'translateY(-1px)' : 'none',
+                        transition: 'background 0.12s, border-color 0.12s, transform 0.12s',
+                      }}
                       onClick={() => {
                         if (!isChinese) return;
                         const url = `/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(focusWord)}`;
@@ -250,7 +259,10 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                         } else {
                           router.push(url);
                         }
-                      }}>
+                      }}
+                      onMouseEnter={() => isChinese && setHoveredCollIdx(i)}
+                      onMouseLeave={() => setHoveredCollIdx(null)}
+                    >
                       {c.collocation}
                     </button>
                   );
@@ -443,6 +455,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                         doNavigate(member.simplified);
                       } else {
                         setExploreHover(false);
+                        setHoveredCollIdx(null);
                         setPeek({ member, color });
                       }
                     }}
