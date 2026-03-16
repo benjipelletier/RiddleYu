@@ -282,15 +282,43 @@ export default function GalaxyGraph() {
   }
 
   if (error || graphData.nodes.length === 0) {
+    const starters = ['看','说','走','想','好','知道','觉得','认为','喜欢','听'];
     return (
-      <div style={{ position: 'fixed', inset: 0, background: '#0a0806', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-        <span style={{ color: 'rgba(217,164,65,0.2)', fontSize: '48px' }}>✦</span>
-        <span style={{ color: 'rgba(217,164,65,0.45)', fontSize: '14px', letterSpacing: '0.08em' }}>
-          星图暂时无法加载
-        </span>
-        <span style={{ color: 'rgba(217,164,65,0.2)', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.06em' }}>
-          Search a word above to explore its cluster
-        </span>
+      <div style={{ position: 'fixed', inset: 0, background: '#0a0806', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: '24px' }}>
+        {/* Decorative constellation dots */}
+        <svg width={300} height={80} style={{ opacity: 0.15 }}>
+          {[
+            [40,20],[80,50],[130,15],[190,45],[240,20],[270,55],
+            [60,60],[150,60],[220,35]
+          ].map(([x,y], i) => (
+            <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 2.5 : 1.5} fill="#d9a441" />
+          ))}
+          {[[40,20],[80,50],[130,15],[190,45],[240,20]].reduce((acc: JSX.Element[], _, i, arr) => {
+            if (i < arr.length - 1) acc.push(
+              <line key={i} x1={arr[i][0]} y1={arr[i][1]} x2={arr[i+1][0]} y2={arr[i+1][1]}
+                stroke="#d9a441" strokeWidth={0.8} />
+            );
+            return acc;
+          }, [])}
+        </svg>
+        <div style={{ textAlign: 'center' as const, display: 'flex', flexDirection: 'column' as const, gap: '8px' }}>
+          <span style={{ color: 'rgba(217,164,65,0.5)', fontSize: '14px', letterSpacing: '0.1em', fontFamily: "'JetBrains Mono', monospace" }}>
+            start exploring
+          </span>
+          <span style={{ color: 'rgba(217,164,65,0.2)', fontSize: '11px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.06em' }}>
+            type any Chinese word above, or try:
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' as const, justifyContent: 'center' as const, maxWidth: '360px' }}>
+          {starters.map(w => (
+            <a key={w} href={`/cluster/${encodeURIComponent(w)}`} style={{
+              color: '#d9a441', fontSize: '22px', fontFamily: 'Noto Serif SC, serif', fontWeight: 900,
+              background: 'rgba(217,164,65,0.06)', border: '1px solid rgba(217,164,65,0.2)',
+              borderRadius: '8px', padding: '8px 14px', textDecoration: 'none',
+              transition: 'background 0.15s',
+            }}>{w}</a>
+          ))}
+        </div>
       </div>
     );
   }
