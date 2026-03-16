@@ -101,6 +101,14 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                 {/* Word header — floating overlay top-left */}
                 <header style={s.wordHeader}>
                   <span className="zh" style={s.wordDisplay}>{simplified}</span>
+                  {data.word.pinyin_display && (
+                    <span style={s.wordPinyin}>{data.word.pinyin_display}</span>
+                  )}
+                  {data.word.raw_glosses.length > 0 && (
+                    <p style={s.wordGlosses}>
+                      {data.word.raw_glosses.slice(0, 3).join('  ·  ')}
+                    </p>
+                  )}
                   <div style={s.clusterList}>
                     {data.clusters.map((cl, i) => {
                       const color = WORD_COLORS[i % WORD_COLORS.length];
@@ -334,6 +342,22 @@ const s: Record<string, React.CSSProperties> = {
     color: '#d9a441',
     textShadow: '0 0 40px rgba(217,164,65,0.3)',
     lineHeight: 1,
+  },
+  wordPinyin: {
+    fontSize: '13px',
+    color: 'rgba(217,164,65,0.5)',
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: '0.08em',
+    marginTop: '2px',
+  },
+  wordGlosses: {
+    fontSize: '12px',
+    color: 'rgba(232,213,176,0.4)',
+    fontFamily: "'JetBrains Mono', monospace",
+    margin: '4px 0 0 0',
+    letterSpacing: '0.03em',
+    lineHeight: 1.5,
+    maxWidth: '200px',
   },
   clusterList: {
     display: 'flex',
