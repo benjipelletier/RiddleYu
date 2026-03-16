@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { forceCollide } from 'd3-force';
 import { forceCluster } from './galaxy/forceCluster';
 import { computeHull, drawHull, drawClusterLabel } from './galaxy/hull';
 import { useGalaxyData } from './galaxy/useGalaxyData';
@@ -52,7 +53,7 @@ export default function GalaxyGraph() {
     const fg = graphRef.current;
     fg.d3Force('link')?.distance(40).strength(0.8);
     fg.d3Force('charge')?.strength(-60);
-    fg.d3Force('collide')?.radius((n: GraphNode) => Math.max(8, Math.log2(n.degree + 1) * 2.5) + 6);
+    fg.d3Force('collide', forceCollide<GraphNode>().radius((n: GraphNode) => Math.max(8, Math.log2(n.degree + 1) * 2.5) + 6));
     fg.d3Force('cluster', forceCluster());
     fg.d3ReheatSimulation();
   }, [graphData.nodes.length]);

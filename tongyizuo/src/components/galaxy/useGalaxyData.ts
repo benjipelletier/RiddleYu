@@ -1,5 +1,5 @@
 // src/components/galaxy/useGalaxyData.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type {
   GalaxyBatchResponse,
   GraphNode,
@@ -83,11 +83,12 @@ export function useGalaxyData(): UseGalaxyDataReturn {
   useEffect(() => {
     setLoading(true);
     fetch(`/api/galaxy?offset=0&limit=${BATCH_SIZE}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(`Galaxy API error ${r.status}`); return r.json(); })
       .then((data: GalaxyBatchResponse) => {
         offsetRef.current = BATCH_SIZE;
         mergeBatch(data);
       })
+      .catch((err) => console.error('[useGalaxyData] initial load failed:', err))
       .finally(() => setLoading(false));
   }, [mergeBatch]);
 
@@ -98,15 +99,18 @@ export function useGalaxyData(): UseGalaxyDataReturn {
     // Advance offset before fetch to prevent double-trigger if loadMore is called again
     offsetRef.current = offset + BATCH_SIZE;
     fetch(`/api/galaxy?offset=${offset}&limit=${BATCH_SIZE}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(`Galaxy API error ${r.status}`); return r.json(); })
       .then((data: GalaxyBatchResponse) => {
         mergeBatch(data);
       })
+      .catch((err) => console.error('[useGalaxyData] loadMore failed:', err))
       .finally(() => setLoadingMore(false));
   }, [loadingMore, hasMore, mergeBatch]);
 
+  const graphData = useMemo(() => ({ nodes, links }), [nodes, links]);
+
   return {
-    graphData: { nodes, links },
+    graphData,
     clusterMetas,
     loading,
     loadingMore,
