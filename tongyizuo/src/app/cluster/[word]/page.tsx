@@ -749,6 +749,9 @@ const s: Record<string, React.CSSProperties> = {
     gap: '10px',
     overflowX: 'auto' as const,
     scrollbarWidth: 'none' as const,
+    maskImage: 'linear-gradient(to right, black 80%, transparent 100%)' as any,
+    WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)' as any,
+    paddingRight: '24px',
   },
   collItem: {
     display: 'flex',
