@@ -510,7 +510,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
           const tx = Math.max(tw / 2 + 6, Math.min(svgW - tw / 2 - 6, tooltip.x));
           const ty = Math.max(8, tooltip.y - nodeR - th - 6);
           return (
-            <g style={{ pointerEvents: 'none' }}>
+            <g className="sg-tooltip" style={{ pointerEvents: 'none' }}>
               <rect x={tx - tw / 2} y={ty} width={tw} height={th} rx={6}
                 fill="rgba(10,8,6,0.96)" stroke="rgba(217,164,65,0.4)" strokeWidth={1} />
               {lines.map((line, i) => (
@@ -578,7 +578,11 @@ if (typeof document !== 'undefined') {
   if (!existing) {
     const st = document.createElement('style');
     st.id = 'sg-anim';
-    st.textContent = `@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
+    st.textContent = `
+      @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      @keyframes tooltipFadeIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
+      .sg-tooltip { animation: tooltipFadeIn 0.1s ease-out; }
+    `;
     document.head.appendChild(st);
   }
 }
