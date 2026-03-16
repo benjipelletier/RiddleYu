@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { forceCollide } from 'd3-force';
 import { forceCluster } from './galaxy/forceCluster';
@@ -16,6 +17,7 @@ const HULL_PAD = 22;
 const LOAD_CHECK_INTERVAL_MS = 2000;
 
 export default function GalaxyGraph() {
+  const router = useRouter();
   const { graphData, clusterMetas, loading, error, loadingMore, loadMore, hasMore } = useGalaxyData();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [dims, setDims] = useState({ width: 800, height: 600 });
@@ -26,6 +28,7 @@ export default function GalaxyGraph() {
   const graphDataRef = useRef(graphData);
   const selectedNodeIdRef = useRef<string | null>(null);
   const hoveredNodeIdRef = useRef<string | null>(null);
+  const [hoveredStarter, setHoveredStarter] = useState<string | null>(null);
   const loadMoreRef = useRef(loadMore);
   const hasMoreRef = useRef(hasMore);
   const loadingMoreRef = useRef(false);
@@ -328,14 +331,31 @@ export default function GalaxyGraph() {
           </span>
         </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' as const, justifyContent: 'center' as const, maxWidth: '360px' }}>
-          {starters.map(w => (
-            <a key={w} href={`/cluster/${encodeURIComponent(w)}`} style={{
-              color: '#d9a441', fontSize: '22px', fontFamily: 'Noto Serif SC, serif', fontWeight: 900,
-              background: 'rgba(217,164,65,0.06)', border: '1px solid rgba(217,164,65,0.2)',
-              borderRadius: '8px', padding: '8px 14px', textDecoration: 'none',
-              transition: 'background 0.15s',
-            }}>{w}</a>
-          ))}
+          {starters.map(w => {
+            const isHov = hoveredStarter === w;
+            return (
+              <button key={w}
+                style={{
+                  color: '#d9a441', fontSize: '22px', fontFamily: 'Noto Serif SC, serif', fontWeight: 900,
+                  background: isHov ? 'rgba(217,164,65,0.14)' : 'rgba(217,164,65,0.06)',
+                  border: `1px solid ${isHov ? 'rgba(217,164,65,0.45)' : 'rgba(217,164,65,0.2)'}`,
+                  borderRadius: '8px', padding: '8px 14px', cursor: 'pointer',
+                  transform: isHov ? 'translateY(-2px)' : 'none',
+                  transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
+                }}
+                onClick={() => {
+                  const url = `/cluster/${encodeURIComponent(w)}`;
+                  if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+                    (document as any).startViewTransition(() => router.push(url));
+                  } else {
+                    router.push(url);
+                  }
+                }}
+                onMouseEnter={() => setHoveredStarter(w)}
+                onMouseLeave={() => setHoveredStarter(null)}
+              >{w}</button>
+            );
+          })}
         </div>
       </div>
     );
