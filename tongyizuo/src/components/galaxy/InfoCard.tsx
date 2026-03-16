@@ -8,25 +8,26 @@ interface InfoCardProps {
   pinyin: string;
   clusterLabel: string;
   core_scene: string | null;
+  onDismiss?: () => void;
 }
 
-export function InfoCard({ simplified, pinyin, clusterLabel, core_scene }: InfoCardProps) {
+export function InfoCard({ simplified, pinyin, clusterLabel, core_scene, onDismiss }: InfoCardProps) {
   const router = useRouter();
 
   return (
     <div style={s.card}>
+      {onDismiss && (
+        <button onClick={onDismiss} style={s.close}>✕</button>
+      )}
       <span className="zh" style={s.char}>{simplified}</span>
       <span style={s.pinyin}>{pinyin}</span>
       <span style={s.cluster}>{clusterLabel}</span>
-      {core_scene
-        ? <p style={s.scene}>{core_scene}</p>
-        : <p style={s.scene}>{clusterLabel}</p>
-      }
+      {core_scene && <p style={s.scene}>{core_scene}</p>}
       <button
         style={s.btn}
         onClick={() => router.push(`/cluster/${encodeURIComponent(simplified)}`)}
       >
-        Explore this cluster →
+        探索 →
       </button>
     </div>
   );
@@ -42,6 +43,7 @@ const s: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(217,164,65,0.35)',
     borderRadius: '12px',
     padding: '18px 20px',
+    paddingRight: '32px',
     minWidth: '200px',
     maxWidth: '280px',
     backdropFilter: 'blur(12px)',
@@ -90,5 +92,17 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: "'JetBrains Mono', monospace",
     cursor: 'pointer',
     textAlign: 'left',
+  },
+  close: {
+    position: 'absolute' as const,
+    top: '10px',
+    right: '12px',
+    background: 'none',
+    border: 'none',
+    color: 'rgba(232,213,176,0.3)',
+    fontSize: '14px',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    lineHeight: 1,
   },
 };
