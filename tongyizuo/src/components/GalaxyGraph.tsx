@@ -212,7 +212,11 @@ export default function GalaxyGraph() {
       return;
     }
 
-    // Circle
+    // Circle (with glow for selected)
+    if (isSelected) {
+      ctx.shadowColor = 'rgba(217,164,65,0.55)';
+      ctx.shadowBlur = 18;
+    }
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2 * Math.PI);
     ctx.fillStyle = `hsla(${hue}, 55%, 55%, ${alpha * 0.8})`;
@@ -220,6 +224,9 @@ export default function GalaxyGraph() {
     ctx.strokeStyle = `hsla(${hue}, 55%, 65%, ${alpha})`;
     ctx.lineWidth = r * 0.08;
     ctx.stroke();
+    if (isSelected) {
+      ctx.shadowBlur = 0;
+    }
 
     // Hover ring
     if (hoveredNodeIdRef.current === node.id && !isSelected) {
