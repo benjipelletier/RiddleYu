@@ -54,6 +54,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [fromHover, setFromHover] = useState(false);
   const [hoveredCollIdx, setHoveredCollIdx] = useState<number | null>(null);
   const [hoveredClusterIdx, setHoveredClusterIdx] = useState<number | null>(null);
+  const [hoveredMode, setHoveredMode] = useState<Mode | null>(null);
   const navInputRef = useRef<HTMLInputElement>(null);
   const [history, setHistory] = useState<string[]>([]);
 
@@ -174,21 +175,38 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
               ...s.navSearchTrigger,
               borderColor: navHover ? 'rgba(217,164,65,0.45)' : 'rgba(217,164,65,0.18)',
               color: navHover ? 'rgba(217,164,65,0.8)' : 'rgba(217,164,65,0.45)',
+              display: 'flex', alignItems: 'center', gap: '6px',
             }}
             onClick={() => setNavOpen(true)}
             onMouseEnter={() => setNavHover(true)}
             onMouseLeave={() => setNavHover(false)}
-            title="Search another word"
+            title="Search another word (or press /)"
           >
-            ⌕
+            <span>⌕</span>
+            <span style={{
+              fontSize: '9px',
+              fontFamily: "'JetBrains Mono', monospace",
+              border: '1px solid rgba(217,164,65,0.2)',
+              borderRadius: '3px',
+              padding: '0 4px',
+              lineHeight: 1.7,
+              opacity: navHover ? 0.7 : 0.35,
+              transition: 'opacity 0.15s',
+            }}>/</span>
           </button>
         )}
 
         {data && !loading && (
           <div style={s.modeToggle}>
             <button
-              style={{ ...s.modeBtn, ...(mode === 'explore' ? s.modeBtnActive : {}) }}
+              style={{
+                ...s.modeBtn,
+                ...(mode === 'explore' ? s.modeBtnActive : {}),
+                ...(mode !== 'explore' && hoveredMode === 'explore' ? { color: 'rgba(232,213,176,0.75)', background: 'rgba(217,164,65,0.07)' } : {}),
+              }}
               onClick={() => setMode('explore')}
+              onMouseEnter={() => setHoveredMode('explore')}
+              onMouseLeave={() => setHoveredMode(null)}
             >
               ⬡ Explore
             </button>
@@ -197,8 +215,11 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                 ...s.modeBtn,
                 ...(mode === 'challenge' ? s.modeBtnActive : {}),
                 ...(hasSituations ? {} : s.modeBtnDisabled),
+                ...(hasSituations && mode !== 'challenge' && hoveredMode === 'challenge' ? { color: 'rgba(232,213,176,0.75)', background: 'rgba(217,164,65,0.07)' } : {}),
               }}
               onClick={() => hasSituations && setMode('challenge')}
+              onMouseEnter={() => hasSituations && setHoveredMode('challenge')}
+              onMouseLeave={() => setHoveredMode(null)}
               title={hasSituations ? '' : 'No challenge situations available'}
             >
               ◈ Challenge
