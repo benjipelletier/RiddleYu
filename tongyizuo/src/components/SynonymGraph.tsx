@@ -338,6 +338,18 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                         style={{ fontFamily: 'inherit' }}>
                         {member.pinyin_display ?? member.pinyin}
                       </text>
+                      {/* HSK level badge — bottom-left */}
+                      {member.hsk_level && (
+                        <g transform={`translate(${-nodeR * 0.72}, ${nodeR * 0.62})`}>
+                          <rect x={-7} y={-6} width={14} height={12} rx={3}
+                            fill="rgba(10,8,6,0.9)" stroke={`${color}55`} strokeWidth={0.8} />
+                          <text textAnchor="middle" dominantBaseline="middle"
+                            fontSize={7.5} fill={`${color}cc`}
+                            style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+                            {member.hsk_level}
+                          </text>
+                        </g>
+                      )}
                       {/* Tiny visited dot at top-right */}
                       {isVisited && (
                         <circle cx={nodeR * 0.68} cy={-nodeR * 0.68} r={4}
