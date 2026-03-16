@@ -503,16 +503,16 @@ export default function GalaxyGraph() {
           dismissing={cardDismissing}
         />
       )}
-      {loadingMore && (
+      {(loadingMore || (graphData.nodes.length > 0 && hasMore)) && (
         <div style={{
           position: 'fixed', bottom: '14px', right: '16px',
           display: 'flex', alignItems: 'center', gap: '6px',
-          color: 'rgba(217,164,65,0.35)', fontSize: '10px',
-          fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.1em',
+          color: 'rgba(217,164,65,0.3)', fontSize: '10px',
+          fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.08em',
           pointerEvents: 'none',
         }}>
-          <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', transformOrigin: 'center' }}>✦</span>
-          <span>expanding</span>
+          {loadingMore && <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite', transformOrigin: 'center' }}>✦</span>}
+          <span style={{ color: 'rgba(217,164,65,0.2)' }}>{graphData.nodes.length} words</span>
         </div>
       )}
     </>
