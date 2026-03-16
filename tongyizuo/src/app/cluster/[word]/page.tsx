@@ -51,6 +51,8 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [navOpen, setNavOpen] = useState(false);
   const [navHover, setNavHover] = useState(false);
   const [backHover, setBackHover] = useState(false);
+  const [retryHover, setRetryHover] = useState(false);
+  const [backToSearchHover, setBackToSearchHover] = useState(false);
   const [fromHover, setFromHover] = useState(false);
   const [hoveredCollIdx, setHoveredCollIdx] = useState<number | null>(null);
   const [hoveredHistoryWord, setHoveredHistoryWord] = useState<string | null>(null);
@@ -125,7 +127,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   return (
     <div style={s.page}>
       {/* Top nav */}
-      <nav style={s.nav}>
+      <nav className="ui-fade-down" style={s.nav}>
         <div style={s.breadcrumb}>
           <button
             style={{ ...s.backBtn, color: backHover ? 'rgba(217,164,65,0.85)' : 'rgba(217,164,65,0.55)' }}
@@ -284,8 +286,18 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
             <p style={s.errorTitle}>Could not load cluster</p>
             <p style={s.errorMsg}>{error}</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button style={s.retryBtn} onClick={() => setRetryCount(c => c + 1)}>↺ Try again</button>
-              <button style={{ ...s.retryBtn, color: 'rgba(232,213,176,0.4)', borderColor: 'rgba(217,164,65,0.15)' }} onClick={() => navigate(router, '/')}>← Back to search</button>
+              <button
+                style={{ ...s.retryBtn, background: retryHover ? 'rgba(217,164,65,0.08)' : 'none', transition: 'background 0.15s' }}
+                onClick={() => setRetryCount(c => c + 1)}
+                onMouseEnter={() => setRetryHover(true)}
+                onMouseLeave={() => setRetryHover(false)}
+              >↺ Try again</button>
+              <button
+                style={{ ...s.retryBtn, color: 'rgba(232,213,176,0.4)', borderColor: 'rgba(217,164,65,0.15)', background: backToSearchHover ? 'rgba(217,164,65,0.05)' : 'none', transition: 'background 0.15s' }}
+                onClick={() => navigate(router, '/')}
+                onMouseEnter={() => setBackToSearchHover(true)}
+                onMouseLeave={() => setBackToSearchHover(false)}
+              >← Back to search</button>
             </div>
           </div>
         )}
