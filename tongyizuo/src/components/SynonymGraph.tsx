@@ -226,7 +226,15 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                   return (
                     <button key={i}
                       style={{ fontSize: '13px', color: peek.color, fontFamily: 'Noto Serif SC, serif', background: `${peek.color}0d`, padding: '2px 8px', borderRadius: '4px', border: `1px solid ${peek.color}33`, cursor: isChinese ? 'pointer' : 'default', lineHeight: 1.4 }}
-                      onClick={() => isChinese && router.push(`/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(focusWord)}`)}>
+                      onClick={() => {
+                        if (!isChinese) return;
+                        const url = `/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(focusWord)}`;
+                        if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+                          (document as any).startViewTransition(() => router.push(url));
+                        } else {
+                          router.push(url);
+                        }
+                      }}>
                       {c.collocation}
                     </button>
                   );
@@ -270,6 +278,15 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
               0%   { transform: scale(1); }
               40%  { transform: scale(1.18); }
               100% { transform: scale(1); }
+            }
+            @keyframes focusPulse {
+              0%, 100% { transform: scale(1); opacity: 0.65; }
+              50%       { transform: scale(1.07); opacity: 0.95; }
+            }
+            .focus-pulse {
+              animation: focusPulse 2.8s ease-in-out infinite;
+              transform-box: fill-box;
+              transform-origin: center;
             }
             .node-clicked {
               animation: nodePop 0.28s ease-out forwards;
@@ -523,7 +540,8 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
               onMouseLeave={() => setTooltip(null)}
             >
               <circle r={focusR} fill="rgba(217,164,65,0.10)"
-                stroke="rgba(217,164,65,0.65)" strokeWidth={1.8} />
+                stroke="rgba(217,164,65,0.65)" strokeWidth={1.8}
+                className="focus-pulse" />
               <text textAnchor="middle" dominantBaseline="middle"
                 fontSize={fSize} className="zh"
                 fill="rgba(217,164,65,0.92)">
