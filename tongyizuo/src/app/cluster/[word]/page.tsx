@@ -283,7 +283,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
         {data && !loading && primaryCluster && (
           <>
             {mode === 'explore' && (
-              <div style={s.exploreWrap}>
+              <div className="mode-enter" style={s.exploreWrap}>
                 {/* Word header — floating overlay top-left */}
                 <header className="word-header-enter" style={s.wordHeader}>
                   <span className="zh" style={s.wordDisplay}>{simplified}</span>
@@ -393,7 +393,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
             )}
 
             {mode === 'challenge' && (
-              <div style={s.challengeWrap}>
+              <div className="mode-enter" style={s.challengeWrap}>
                 {/* Compact inline header — no absolute positioning in challenge mode */}
                 <header style={s.challengeHeader}>
                   <span className="zh" style={s.challengeChar}>{simplified}</span>
@@ -843,6 +843,11 @@ if (typeof document !== 'undefined' && !document.getElementById('cp-anim')) {
       to   { opacity: 1; transform: translateX(0); }
     }
     .word-header-enter { animation: headerFadeIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards; }
+    @keyframes modeFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .mode-enter { animation: modeFadeIn 0.2s cubic-bezier(0.22,1,0.36,1) forwards; }
   `;
   document.head.appendChild(style);
 }
