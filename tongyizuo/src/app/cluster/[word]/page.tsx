@@ -96,49 +96,82 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
 
         {data && !loading && primaryCluster && (
           <>
-            {/* Word header */}
-            <header style={s.wordHeader}>
-              <span className="zh" style={s.wordDisplay}>{simplified}</span>
-              {/* Cluster list — vertical, one per cluster */}
-              <div style={s.clusterList}>
-                {data.clusters.map((cl, i) => {
-                  const color = WORD_COLORS[i % WORD_COLORS.length];
-                  const isActive = activeClusterIdx === i;
-                  return (
-                    <button
-                      key={cl.id}
-                      style={{
-                        ...s.clusterRow,
-                        opacity: isActive ? 1 : 0.3,
-                        color: isActive ? color : `${color}aa`,
-                        background: isActive ? `${color}12` : 'transparent',
-                        borderColor: isActive ? `${color}88` : `${color}44`,
-                      }}
-                      onClick={() => setActiveClusterIdx(prev => prev === i ? null : i)}
-                    >
-                      <span style={s.clusterRowLabel}>{cl.label}</span>
-                      <span style={{ ...s.clusterRowCount, color: isActive ? `${color}88` : `${color}44` }}>
-                        {cl.members.length - 1}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              {data.word.core_scene && (
-                <p style={s.coreScene}>{data.word.core_scene}</p>
-              )}
-            </header>
-
             {mode === 'explore' && (
-              <SynonymGraph
-                clusters={data.clusters}
-                focusWord={simplified}
-                activeClusterIdx={activeClusterIdx}
-              />
+              <div style={s.exploreWrap}>
+                {/* Word header — floating overlay top-left */}
+                <header style={s.wordHeader}>
+                  <span className="zh" style={s.wordDisplay}>{simplified}</span>
+                  <div style={s.clusterList}>
+                    {data.clusters.map((cl, i) => {
+                      const color = WORD_COLORS[i % WORD_COLORS.length];
+                      const isActive = activeClusterIdx === i;
+                      return (
+                        <button
+                          key={cl.id}
+                          style={{
+                            ...s.clusterRow,
+                            opacity: isActive ? 1 : 0.3,
+                            color: isActive ? color : `${color}aa`,
+                            background: isActive ? `${color}12` : 'transparent',
+                            borderColor: isActive ? `${color}88` : `${color}44`,
+                          }}
+                          onClick={() => setActiveClusterIdx(prev => prev === i ? null : i)}
+                        >
+                          <span style={s.clusterRowLabel}>{cl.label}</span>
+                          <span style={{ ...s.clusterRowCount, color: isActive ? `${color}88` : `${color}44` }}>
+                            {cl.members.length - 1}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {data.word.core_scene && (
+                    <p style={s.coreScene}>{data.word.core_scene}</p>
+                  )}
+                </header>
+
+                {/* Graph — fills remaining space, 看 at center */}
+                <div style={s.graphCenter}>
+                  <SynonymGraph
+                    clusters={data.clusters}
+                    focusWord={simplified}
+                    activeClusterIdx={activeClusterIdx}
+                  />
+                </div>
+              </div>
             )}
 
             {mode === 'challenge' && (
-              <ChallengeMode cluster={primaryCluster} />
+              <div style={s.challengeWrap}>
+                <header style={s.wordHeader}>
+                  <span className="zh" style={s.wordDisplay}>{simplified}</span>
+                  <div style={s.clusterList}>
+                    {data.clusters.map((cl, i) => {
+                      const color = WORD_COLORS[i % WORD_COLORS.length];
+                      const isActive = activeClusterIdx === i;
+                      return (
+                        <button
+                          key={cl.id}
+                          style={{
+                            ...s.clusterRow,
+                            opacity: isActive ? 1 : 0.3,
+                            color: isActive ? color : `${color}aa`,
+                            background: isActive ? `${color}12` : 'transparent',
+                            borderColor: isActive ? `${color}88` : `${color}44`,
+                          }}
+                          onClick={() => setActiveClusterIdx(prev => prev === i ? null : i)}
+                        >
+                          <span style={s.clusterRowLabel}>{cl.label}</span>
+                          <span style={{ ...s.clusterRowCount, color: isActive ? `${color}88` : `${color}44` }}>
+                            {cl.members.length - 1}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </header>
+                <ChallengeMode cluster={primaryCluster} />
+              </div>
             )}
           </>
         )}
@@ -203,6 +236,22 @@ const s: Record<string, React.CSSProperties> = {
   },
   main: {
     flex: 1,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  exploreWrap: {
+    position: 'absolute',
+    inset: 0,
+  },
+  graphCenter: {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  challengeWrap: {
     padding: '32px 24px',
     maxWidth: '900px',
     margin: '0 auto',
@@ -271,10 +320,14 @@ const s: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
   wordHeader: {
-    marginBottom: '32px',
+    position: 'absolute',
+    top: '24px',
+    left: '28px',
+    zIndex: 2,
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    pointerEvents: 'auto',
   },
   wordDisplay: {
     fontSize: '64px',

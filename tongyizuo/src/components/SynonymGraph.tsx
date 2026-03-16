@@ -198,7 +198,7 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
       <svg
         width={svgW} height={svgH}
         viewBox={`0 0 ${svgW} ${svgH}`}
-        style={{ overflow: 'visible', width: '100%', maxWidth: svgW }}
+        style={{ overflow: 'visible', width: svgW, height: svgH, flexShrink: 0 }}
       >
         {/* Outer gloss rings — behind everything */}
         {outerRing}
@@ -375,7 +375,7 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
 }
 
 const s: Record<string, React.CSSProperties> = {
-  wrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' },
+  wrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', position: 'relative' },
   detail: {
     width: '100%', display: 'flex', flexDirection: 'column', gap: '12px',
     paddingTop: '8px', borderTop: '1px solid rgba(217,164,65,0.1)',
