@@ -488,13 +488,15 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                         style={{ animation: 'nodeRipple2 0.5s 0.05s ease-out forwards', transformBox: 'fill-box', transformOrigin: 'center' }} />
                     </>}
                     <g className={isClicked ? 'node-clicked' : ''}>
-                      {hoveredKey === nodeKey && !peek && (
-                        <circle r={nodeR + 6}
-                          fill="none" stroke={color} strokeWidth={1}
-                          opacity={0.25}
-                          style={{ pointerEvents: 'none' }}
-                        />
-                      )}
+                      {/* Hover ring — smooth opacity transition */}
+                      <circle r={nodeR + 6}
+                        fill="none" stroke={color} strokeWidth={1}
+                        style={{
+                          opacity: hoveredKey === nodeKey && !peek ? 0.28 : 0,
+                          transition: 'opacity 0.15s',
+                          pointerEvents: 'none',
+                        }}
+                      />
                       <circle r={nodeR}
                         fill={isClicked ? `${color}22` : isPeeked ? `${color}28` : isVisited ? `${color}18` : `${color}10`}
                         stroke={isPeeked ? color : color}
