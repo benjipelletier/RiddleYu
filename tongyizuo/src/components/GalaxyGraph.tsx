@@ -9,7 +9,7 @@ import { forceCluster } from './galaxy/forceCluster';
 import { computeHull, drawHull, drawClusterLabel } from './galaxy/hull';
 import { useGalaxyData } from './galaxy/useGalaxyData';
 import { InfoCard } from './galaxy/InfoCard';
-import { shortGloss } from './SynonymGraph';
+import { shortGloss, toneColor } from './SynonymGraph';
 import type { GraphNode, GraphLink, ClusterMeta } from './galaxy/types';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
@@ -302,12 +302,16 @@ export default function GalaxyGraph() {
     ctx.fillStyle = `rgba(255,248,235,${alpha * 0.95})`;
     ctx.fillText(node.id, x, y);
 
-    // Pinyin below (close zoom only)
+    // Pinyin below (close zoom only) — tone-colored
     if (globalScale >= 1.5) {
       const pSize = r * 0.5;
       ctx.font = `300 ${pSize}px 'JetBrains Mono', monospace`;
-      ctx.fillStyle = `rgba(232,213,176,${alpha * 0.5})`;
+      const tc = toneColor(node.pinyin);
+      // tc is a CSS color string; apply alpha by painting on an offscreen approach via globalAlpha
+      ctx.globalAlpha = alpha * 0.72;
+      ctx.fillStyle = tc;
       ctx.fillText(node.pinyin, x, y + r + pSize * 0.9);
+      ctx.globalAlpha = 1;
 
       // Short gloss at very high zoom
       if (globalScale >= 2.8 && node.raw_glosses?.length > 0) {
