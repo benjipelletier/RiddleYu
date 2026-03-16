@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ClusterResponse } from '../../../../lib/types';
 import SynonymGraph from '../../../components/SynonymGraph';
@@ -19,6 +19,22 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [error, setError] = useState('');
   const [mode, setMode] = useState<Mode>('explore');
   const [activeClusterIdx, setActiveClusterIdx] = useState<number | null>(null);
+  const [navSearch, setNavSearch] = useState('');
+  const [navOpen, setNavOpen] = useState(false);
+  const navInputRef = useRef<HTMLInputElement>(null);
+
+  function handleNavSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const w = navSearch.trim();
+    if (!w || !/[\u4e00-\u9fff]/.test(w)) return;
+    setNavSearch('');
+    setNavOpen(false);
+    router.push(`/cluster/${encodeURIComponent(w)}`);
+  }
+
+  useEffect(() => {
+    if (navOpen) setTimeout(() => navInputRef.current?.focus(), 50);
+  }, [navOpen]);
 
   useEffect(() => {
     setLoading(true);
@@ -54,8 +70,30 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
           if (window.history.length > 1) router.back();
           else router.push('/');
         }}>
-          ← 同义词星图
+          ← 星图
         </button>
+
+        {/* Inline search */}
+        {navOpen ? (
+          <form onSubmit={handleNavSearch} style={s.navSearchForm}>
+            <input
+              ref={navInputRef}
+              value={navSearch}
+              onChange={e => setNavSearch(e.target.value)}
+              placeholder="探索..."
+              style={s.navSearchInput}
+              autoComplete="off"
+              spellCheck={false}
+              onBlur={() => { if (!navSearch) setNavOpen(false); }}
+            />
+            <button type="submit" style={s.navSearchBtn}>→</button>
+          </form>
+        ) : (
+          <button style={s.navSearchTrigger} onClick={() => setNavOpen(true)} title="Search another word">
+            ⌕
+          </button>
+        )}
+
         {data && !loading && (
           <div style={s.modeToggle}>
             <button
@@ -235,12 +273,50 @@ const s: Record<string, React.CSSProperties> = {
   backBtn: {
     background: 'none',
     border: 'none',
-    color: 'rgba(232,213,176,0.45)',
+    color: 'rgba(217,164,65,0.55)',
     fontSize: '13px',
     fontFamily: 'inherit',
     cursor: 'pointer',
     padding: '4px 0',
     transition: 'color 0.2s',
+    letterSpacing: '0.04em',
+  },
+  navSearchForm: {
+    display: 'flex',
+    gap: '4px',
+  },
+  navSearchInput: {
+    background: 'rgba(10,8,6,0.7)',
+    border: '1px solid rgba(217,164,65,0.3)',
+    borderRadius: '5px',
+    padding: '5px 10px',
+    color: '#e8d5b0',
+    fontSize: '14px',
+    fontFamily: 'inherit',
+    outline: 'none',
+    width: '130px',
+  },
+  navSearchBtn: {
+    background: 'rgba(217,164,65,0.12)',
+    border: '1px solid rgba(217,164,65,0.3)',
+    borderRadius: '5px',
+    padding: '5px 10px',
+    color: '#d9a441',
+    fontSize: '13px',
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+  },
+  navSearchTrigger: {
+    background: 'none',
+    border: '1px solid rgba(217,164,65,0.18)',
+    borderRadius: '5px',
+    padding: '4px 10px',
+    color: 'rgba(217,164,65,0.45)',
+    fontSize: '16px',
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    lineHeight: 1,
+    transition: 'border-color 0.2s, color 0.2s',
   },
   modeToggle: {
     display: 'flex',
