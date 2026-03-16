@@ -43,7 +43,6 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
   const cy = svgH / 2;
 
   const clusterR = K === 1 ? 180 : K === 2 ? 200 : K <= 4 ? 218 : 230;
-  const memberR = 118;
   const focusR = 36;
   const nodeR = 32;
 
@@ -65,8 +64,16 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
       .sort((a, b) => (edgeCounts[b.simplified] || 0) - (edgeCounts[a.simplified] || 0))
       .slice(0, MAX_MEMBERS);
 
+    // Fan members in an outward arc (away from focus), never back toward center
+    const outwardAngle = cc.angle;
+    const n = members.length;
+    // Radius grows with cluster size so nodes don't overlap
+    const memberR = Math.max(118, n * 16 + 70);
+    // Arc spread ensures minimum chord distance > 2*nodeR between adjacent nodes
+    const arcSpread = n <= 1 ? 0 : Math.min(Math.PI, (n - 1) * 0.55);
     const memberPositions = members.map((_, mi) => {
-      const angle = (2 * Math.PI * mi / (members.length || 1)) - Math.PI / 2;
+      const t = n > 1 ? mi / (n - 1) : 0.5;
+      const angle = outwardAngle - arcSpread / 2 + t * arcSpread;
       return { x: cc.x + memberR * Math.cos(angle), y: cc.y + memberR * Math.sin(angle), angle };
     });
 
