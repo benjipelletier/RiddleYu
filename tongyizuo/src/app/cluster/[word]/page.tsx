@@ -660,6 +660,8 @@ const s: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: '8px',
     pointerEvents: 'auto',
+    padding: '12px 24px 16px 0',
+    background: 'radial-gradient(ellipse 260px 340px at 40px 60px, rgba(10,8,6,0.72) 55%, transparent 100%)',
   },
   wordDisplay: {
     fontSize: '64px',
