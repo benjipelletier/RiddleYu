@@ -410,7 +410,10 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                   if (!colls.length) return null;
                   return (
                     <div className="coll-strip-enter" style={{ ...s.collStrip, borderTopColor: `${color}22` }}>
-                      <span style={{ ...s.collLabel, color: `${color}66` }}>collocations</span>
+                      <span style={{ ...s.collLabel, color: `${color}66` }}>
+                        collocations
+                        <span style={{ fontSize: '8px', opacity: 0.6, marginLeft: '4px' }}>{colls.length}</span>
+                      </span>
                       <div style={s.collItems}>
                         {colls.map((c, i) => {
                           const isChinese = /[\u4e00-\u9fff]/.test(c.collocation);
@@ -773,15 +776,6 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: "'JetBrains Mono', monospace",
     letterSpacing: '0.08em',
     marginTop: '2px',
-  },
-  wordGlosses: {
-    fontSize: '11px',
-    color: 'rgba(232,213,176,0.4)',
-    fontFamily: "'JetBrains Mono', monospace",
-    margin: '4px 0 0 0',
-    letterSpacing: '0.03em',
-    lineHeight: 1.6,
-    maxWidth: '240px',
   },
   clusterList: {
     display: 'flex',
