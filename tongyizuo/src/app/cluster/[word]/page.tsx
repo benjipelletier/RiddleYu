@@ -42,6 +42,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [navOpen, setNavOpen] = useState(false);
   const [navHover, setNavHover] = useState(false);
   const [backHover, setBackHover] = useState(false);
+  const [hoveredCollIdx, setHoveredCollIdx] = useState<number | null>(null);
   const navInputRef = useRef<HTMLInputElement>(null);
   const [history, setHistory] = useState<string[]>([]);
 
@@ -309,13 +310,25 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                       <div style={s.collItems}>
                         {colls.map((c, i) => {
                           const isChinese = /[\u4e00-\u9fff]/.test(c.collocation);
+                          const isHovered = hoveredCollIdx === i && isChinese;
                           return (
                             <button
                               key={i}
-                              style={{ ...s.collItem, cursor: isChinese ? 'pointer' : 'default', border: 'none', fontFamily: 'inherit', textAlign: 'center' as const }}
+                              style={{
+                                ...s.collItem,
+                                cursor: isChinese ? 'pointer' : 'default',
+                                border: 'none',
+                                fontFamily: 'inherit',
+                                textAlign: 'center' as const,
+                                background: isHovered ? `${color}12` : 'rgba(255,255,255,0.03)',
+                                transform: isHovered ? 'translateY(-1px)' : 'none',
+                                transition: 'background 0.15s, transform 0.15s',
+                              }}
                               onClick={() => isChinese && router.push(`/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(simplified)}`)}
+                              onMouseEnter={() => isChinese && setHoveredCollIdx(i)}
+                              onMouseLeave={() => setHoveredCollIdx(null)}
                             >
-                              <span className="zh" style={{ ...s.collZh, color }}>{c.collocation}</span>
+                              <span className="zh" style={{ ...s.collZh, color, opacity: isHovered ? 1 : 0.85, transition: 'opacity 0.15s' }}>{c.collocation}</span>
                               {c.gloss && <span style={s.collGloss}>{c.gloss}</span>}
                             </button>
                           );
