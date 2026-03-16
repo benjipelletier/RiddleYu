@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { ClusterResponse } from '../../../../lib/types';
 import SynonymGraph, { shortGloss } from '../../../components/SynonymGraph';
 import ChallengeMode from '../../../components/ChallengeMode';
+import { WORD_COLORS } from '../../../components/WordNode';
 
 type Mode = 'explore' | 'challenge';
 
@@ -17,6 +18,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<Mode>('explore');
+  const [activeClusterIdx, setActiveClusterIdx] = useState<number | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -97,12 +99,38 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
             {/* Word header */}
             <header style={s.wordHeader}>
               <span className="zh" style={s.wordDisplay}>{simplified}</span>
-              <div style={s.wordMeta}>
-                <span style={s.clusterLabel}>{primaryCluster.label}</span>
-                <span style={s.memberCount}>{primaryCluster.members.length} synonyms</span>
+              {/* Cluster selector pills */}
+              <div style={s.clusterPills}>
+                {data.clusters.map((cl, i) => {
+                  const color = WORD_COLORS[i % WORD_COLORS.length];
+                  const isActive = activeClusterIdx === i;
+                  const isDimmed = activeClusterIdx !== null && !isActive;
+                  return (
+                    <button
+                      key={cl.id}
+                      style={{
+                        ...s.clusterPill,
+                        color: isActive ? color : `${color}99`,
+                        borderColor: isActive ? `${color}88` : `${color}33`,
+                        background: isActive ? `${color}18` : 'transparent',
+                        opacity: isDimmed ? 0.35 : 1,
+                      }}
+                      onClick={() => setActiveClusterIdx(prev => prev === i ? null : i)}
+                    >
+                      {cl.label}
+                      <span style={{ ...s.clusterPillCount, color: `${color}66` }}>
+                        {cl.members.length}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              {/* Definitions row: cluster label at full opacity, others dimmed */}
+              {/* Definitions row: active cluster label at full opacity, others dimmed */}
               {(data.word as any).raw_glosses?.length > 0 && (() => {
+                const activeLabel = activeClusterIdx !== null
+                  ? data.clusters[activeClusterIdx]?.label
+                  : null;
+                const highlightLabel = activeLabel ?? primaryCluster.label;
                 const processed = ((data.word as any).raw_glosses as string[])
                   .map(shortGloss)
                   .filter(Boolean)
@@ -113,9 +141,9 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                     {processed.map((g, i) => (
                       <span key={i} style={{
                         ...s.glossPill,
-                        opacity: g === primaryCluster.label ? 1 : 0.28,
-                        fontWeight: g === primaryCluster.label ? 500 : 300,
-                        border: g === primaryCluster.label
+                        opacity: g === highlightLabel ? 1 : 0.28,
+                        fontWeight: g === highlightLabel ? 500 : 300,
+                        border: g === highlightLabel
                           ? '1px solid rgba(217,164,65,0.4)'
                           : '1px solid rgba(217,164,65,0.12)',
                       }}>
@@ -134,6 +162,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
               <SynonymGraph
                 clusters={data.clusters}
                 focusWord={simplified}
+                activeClusterIdx={activeClusterIdx}
               />
             )}
 
@@ -305,6 +334,30 @@ const s: Record<string, React.CSSProperties> = {
     lineHeight: 1.6,
     maxWidth: '560px',
     fontStyle: 'italic',
+  },
+  clusterPills: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginTop: '4px',
+  },
+  clusterPill: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '5px',
+    padding: '4px 12px',
+    borderRadius: '20px',
+    border: '1px solid',
+    fontSize: '12px',
+    fontFamily: "'JetBrains Mono', monospace",
+    letterSpacing: '0.06em',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    background: 'transparent',
+  },
+  clusterPillCount: {
+    fontSize: '10px',
+    fontFamily: "'JetBrains Mono', monospace",
   },
   glossRow: {
     display: 'flex',

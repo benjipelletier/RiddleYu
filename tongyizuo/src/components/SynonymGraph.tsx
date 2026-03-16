@@ -8,6 +8,7 @@ import CollocationField from './CollocationField';
 interface Props {
   clusters: ClusterData[];
   focusWord: string;
+  activeClusterIdx?: number | null;
 }
 
 const MAX_MEMBERS = 7;
@@ -25,7 +26,7 @@ export function shortGloss(raw: string): string {
   return g.length > 22 ? g.slice(0, 20) + '…' : g;
 }
 
-export default function SynonymGraph({ clusters, focusWord }: Props) {
+export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = null }: Props) {
   const [selectedSimplified, setSelectedSimplified] = useState<string | null>(null);
 
   const K = clusters.length;
@@ -150,11 +151,12 @@ export default function SynonymGraph({ clusters, focusWord }: Props) {
   // Outer gloss ring: other definitions of each member, fanning outward
   const outerRing = useMemo(() => layouts.flatMap(({ cluster, members, memberPositions, cc }, ci) => {
     const color = WORD_COLORS[ci % WORD_COLORS.length];
+    const clusterDimmedOuter = activeClusterIdx !== null && activeClusterIdx !== ci;
     return members.flatMap((member, mi) => {
       const pos = memberPositions[mi];
       const isSelected = selectedSimplified === member.simplified;
       const isDimmed = selectedSimplified !== null && !isSelected;
-      const opacity = isDimmed ? 0.08 : isSelected ? 0.82 : 0.35;
+      const opacity = clusterDimmedOuter ? 0.06 : isDimmed ? 0.08 : isSelected ? 0.82 : 0.35;
 
       const outward = (() => {
         const dx = pos.x - cc.x, dy = pos.y - cc.y;
@@ -190,7 +192,7 @@ export default function SynonymGraph({ clusters, focusWord }: Props) {
         );
       });
     });
-  }), [layouts, selectedSimplified, outerRingDist]);
+  }), [layouts, selectedSimplified, outerRingDist, activeClusterIdx]);
 
   return (
     <div style={s.wrap}>
@@ -207,16 +209,22 @@ export default function SynonymGraph({ clusters, focusWord }: Props) {
           <line key={`trunk-${ci}`}
             x1={cx} y1={cy} x2={cc.x} y2={cc.y}
             stroke="rgba(217,164,65,0.18)" strokeWidth={1.2}
-            strokeDasharray="6 5" />
+            strokeDasharray="6 5"
+            style={{
+              opacity: activeClusterIdx !== null && activeClusterIdx !== ci ? 0.12 : 1,
+              transition: 'opacity 0.3s',
+            }} />
         ))}
 
         {/* Per-cluster: spokes, cross-edges, gloss pill, member nodes */}
         {layouts.map(({ cluster, cc, members, memberPositions, crossEdges }, ci) => {
           const color = WORD_COLORS[ci % WORD_COLORS.length];
           const maxCross = Math.max(...crossEdges.map(e => 2), 2);
+          const clusterDimmed = activeClusterIdx !== null && activeClusterIdx !== ci;
 
           return (
-            <g key={`cluster-${ci}`}>
+            <g key={`cluster-${ci}`}
+              style={{ opacity: clusterDimmed ? 0.12 : 1, transition: 'opacity 0.3s' }}>
               {/* Spokes: gloss pill → members */}
               {members.map((m, mi) => {
                 const pos = memberPositions[mi];
