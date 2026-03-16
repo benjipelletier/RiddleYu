@@ -34,6 +34,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
 
   const [data, setData] = useState<ClusterResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showSlowHint, setShowSlowHint] = useState(false);
   const [error, setError] = useState('');
   const [mode, setMode] = useState<Mode>('explore');
   const [activeClusterIdx, setActiveClusterIdx] = useState<number | null>(null);
@@ -64,8 +65,11 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
 
   useEffect(() => {
     setLoading(true);
+    setShowSlowHint(false);
     setError('');
     setData(null);
+
+    const hintTimer = setTimeout(() => setShowSlowHint(true), 4000);
 
     fetch(`/api/cluster/${encodeURIComponent(simplified)}`)
       .then(async (res) => {
@@ -76,13 +80,17 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
         return res.json();
       })
       .then((json: ClusterResponse) => {
+        clearTimeout(hintTimer);
         setData(json);
         setLoading(false);
       })
       .catch((err) => {
+        clearTimeout(hintTimer);
         setError(err.message);
         setLoading(false);
       });
+
+    return () => clearTimeout(hintTimer);
   }, [simplified]);
 
   const primaryCluster = data?.clusters?.[0];
@@ -208,7 +216,9 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
           <div style={s.loading}>
             <span className="zh" style={s.loadingChar}>{simplified}</span>
             <p style={s.loadingText}>mapping the constellation…</p>
-            <p style={s.loadingHint}>first visit may take 20–40s while we map synonyms</p>
+            <p style={{ ...s.loadingHint, opacity: showSlowHint ? 1 : 0, transition: 'opacity 0.8s ease' }}>
+              first visit may take 20–40s while we map synonyms
+            </p>
           </div>
         )}
 
@@ -734,9 +744,10 @@ const s: Record<string, React.CSSProperties> = {
   },
 };
 
-// Inject animations
-if (typeof document !== 'undefined') {
+// Inject animations (once)
+if (typeof document !== 'undefined' && !document.getElementById('cp-anim')) {
   const style = document.createElement('style');
+  style.id = 'cp-anim';
   style.textContent = `
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse {
