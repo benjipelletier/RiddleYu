@@ -37,10 +37,15 @@ if (typeof document !== 'undefined' && !document.getElementById('ch-anim')) {
       from { transform: translateY(10px); opacity: 0; }
       to   { transform: translateY(0);    opacity: 1; }
     }
+    @keyframes situationFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
     .ch-correct { animation: correctPulse 0.45s ease-out forwards; }
     .ch-wrong   { animation: wrongShake 0.35s ease-out forwards; }
     .ch-score-flash { animation: scoreFlash 0.35s ease-out forwards; display: inline-block; }
     .ch-explain { animation: explainSlideUp 0.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .ch-situation { animation: situationFadeIn 0.18s cubic-bezier(0.22,1,0.36,1) forwards; }
   `;
   document.head.appendChild(st);
 }
@@ -125,7 +130,7 @@ export default function ChallengeMode({ cluster }: Props) {
       </div>
 
       {/* Situation card */}
-      <div style={s.situationCard}>
+      <div key={currentIdx} className="ch-situation" style={s.situationCard}>
         <p style={s.situationText}>{current.situation_en}</p>
       </div>
 
