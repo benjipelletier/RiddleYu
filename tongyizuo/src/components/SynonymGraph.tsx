@@ -205,7 +205,7 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
           <div style={{ flex: 1, minWidth: 0 }}>
             {peek.member.raw_glosses.length > 0 && (
               <p style={{ fontSize: '13px', color: 'rgba(232,213,176,0.65)', fontFamily: "'JetBrains Mono', monospace", margin: '0 0 8px 0', lineHeight: 1.6 }}>
-                {peek.member.raw_glosses.slice(0, 3).map(g => shortGloss(g)).filter(Boolean).join('  ·  ')}
+                {peek.member.raw_glosses.map(g => shortGloss(g)).filter(Boolean).filter((g, i, a) => a.indexOf(g) === i).slice(0, 3).join('  ·  ')}
               </p>
             )}
             {peek.member.core_scene && (
