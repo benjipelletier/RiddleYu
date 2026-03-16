@@ -131,7 +131,7 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
     if (clickedWord) return;
     setClickedWord(word);
     markVisited(word);
-    const url = '/cluster/' + encodeURIComponent(word);
+    const url = `/cluster/${encodeURIComponent(word)}?from=${encodeURIComponent(focusWord)}`;
     setTimeout(() => {
       if (typeof document !== 'undefined' && 'startViewTransition' in document) {
         (document as any).startViewTransition(() => { router.push(url); });

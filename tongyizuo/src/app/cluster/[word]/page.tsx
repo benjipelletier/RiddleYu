@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, use } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { ClusterResponse } from '../../../../lib/types';
 import SynonymGraph, { shortGloss } from '../../../components/SynonymGraph';
 import ChallengeMode from '../../../components/ChallengeMode';
@@ -13,6 +13,8 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const { word } = use(params);
   const simplified = decodeURIComponent(word);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromWord = searchParams.get('from');
 
   const [data, setData] = useState<ClusterResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,12 +68,27 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
     <div style={s.page}>
       {/* Top nav */}
       <nav style={s.nav}>
-        <button style={s.backBtn} onClick={() => {
-          if (window.history.length > 1) router.back();
-          else router.push('/');
-        }}>
-          ← 星图
-        </button>
+        <div style={s.breadcrumb}>
+          <button style={s.backBtn} onClick={() => {
+            if (window.history.length > 1) router.back();
+            else router.push('/');
+          }}>
+            ← 星图
+          </button>
+          {fromWord && (
+            <>
+              <span style={s.breadcrumbSep}>/</span>
+              <button
+                style={s.breadcrumbFrom}
+                onClick={() => router.push(`/cluster/${encodeURIComponent(fromWord)}`)}
+              >
+                <span className="zh">{fromWord}</span>
+              </button>
+              <span style={s.breadcrumbSep}>›</span>
+              <span style={s.breadcrumbCurrent} className="zh">{simplified}</span>
+            </>
+          )}
+        </div>
 
         {/* Inline search */}
         {navOpen ? (
@@ -275,6 +292,11 @@ const s: Record<string, React.CSSProperties> = {
     flexWrap: 'wrap',
     gap: '12px',
   },
+  breadcrumb: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
   backBtn: {
     background: 'none',
     border: 'none',
@@ -285,6 +307,23 @@ const s: Record<string, React.CSSProperties> = {
     padding: '4px 0',
     transition: 'color 0.2s',
     letterSpacing: '0.04em',
+  },
+  breadcrumbSep: {
+    color: 'rgba(217,164,65,0.2)',
+    fontSize: '12px',
+  },
+  breadcrumbFrom: {
+    background: 'none',
+    border: 'none',
+    color: 'rgba(217,164,65,0.5)',
+    fontSize: '16px',
+    fontFamily: 'inherit',
+    cursor: 'pointer',
+    padding: '0',
+  },
+  breadcrumbCurrent: {
+    color: '#d9a441',
+    fontSize: '16px',
   },
   navSearchForm: {
     display: 'flex',
@@ -461,13 +500,16 @@ const s: Record<string, React.CSSProperties> = {
     marginTop: '2px',
   },
   wordGlosses: {
-    fontSize: '12px',
+    fontSize: '11px',
     color: 'rgba(232,213,176,0.4)',
     fontFamily: "'JetBrains Mono', monospace",
     margin: '4px 0 0 0',
     letterSpacing: '0.03em',
-    lineHeight: 1.5,
-    maxWidth: '200px',
+    lineHeight: 1.4,
+    maxWidth: '220px',
+    whiteSpace: 'nowrap' as const,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   clusterList: {
     display: 'flex',
