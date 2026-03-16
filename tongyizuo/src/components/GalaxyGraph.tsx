@@ -16,6 +16,17 @@ const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false 
 const HULL_PAD = 22;
 const LOAD_CHECK_INTERVAL_MS = 2000;
 
+// Static star-field: generated once at module load (deterministic)
+const STARS = (() => {
+  const stars: { x: number; y: number; r: number; a: number }[] = [];
+  let seed = 42;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) & 0x7fffffff; return seed / 0x7fffffff; };
+  for (let i = 0; i < 220; i++) {
+    stars.push({ x: rand(), y: rand(), r: rand() * 0.8 + 0.3, a: rand() * 0.25 + 0.05 });
+  }
+  return stars;
+})();
+
 export default function GalaxyGraph() {
   const router = useRouter();
   const { graphData, clusterMetas, loading, error, loadingMore, loadMore, hasMore } = useGalaxyData();
@@ -88,6 +99,19 @@ export default function GalaxyGraph() {
   const onRenderFramePre = useCallback((ctx: CanvasRenderingContext2D, globalScale: number) => {
     const metas = clusterMetasRef.current;
     const nodes = graphDataRef.current.nodes;
+
+    // Draw static star-field in screen space
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const cw = (ctx.canvas as HTMLCanvasElement).width;
+    const ch = (ctx.canvas as HTMLCanvasElement).height;
+    for (const s of STARS) {
+      ctx.beginPath();
+      ctx.arc(s.x * cw, s.y * ch, s.r, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(232,213,176,${s.a})`;
+      ctx.fill();
+    }
+    ctx.restore();
 
     // Draw cluster hulls
     for (const meta of metas) {
