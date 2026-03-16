@@ -128,7 +128,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
               onClick={() => hasSituations && setMode('challenge')}
               title={hasSituations ? '' : 'No challenge situations available'}
             >
-              ⁇ Challenge
+              ◈ Challenge
             </button>
           </div>
         )}

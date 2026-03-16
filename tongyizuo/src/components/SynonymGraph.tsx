@@ -86,6 +86,15 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
     setVisited(loadVisited());
   }, [focusWord]);
 
+  // Escape dismisses peek card
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setPeek(null);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   const K = clusters.length;
   const svgW = 900;
   const svgH = 900;
