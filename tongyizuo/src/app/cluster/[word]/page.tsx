@@ -538,6 +538,11 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: '6px',
     alignItems: 'center',
+    overflowX: 'auto' as const,
+    scrollbarWidth: 'none' as const,
+    maskImage: 'linear-gradient(to right, black 88%, transparent 100%)' as any,
+    WebkitMaskImage: 'linear-gradient(to right, black 88%, transparent 100%)' as any,
+    paddingRight: '16px',
   },
   historyPill: {
     background: 'transparent',
