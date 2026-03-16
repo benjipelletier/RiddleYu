@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ClusterResponse } from '../../../../lib/types';
-import SynonymGraph, { shortGloss, MAX_MEMBERS } from '../../../components/SynonymGraph';
+import SynonymGraph, { shortGloss, toneColor, MAX_MEMBERS } from '../../../components/SynonymGraph';
 import ChallengeMode from '../../../components/ChallengeMode';
 import { WORD_COLORS } from '../../../components/WordNode';
 
@@ -298,7 +298,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                 <header className="word-header-enter" style={s.wordHeader}>
                   <span className="zh" style={s.wordDisplay}>{simplified}</span>
                   {data.word.pinyin_display && (
-                    <span style={s.wordPinyin}>{data.word.pinyin_display}</span>
+                    <span style={{ ...s.wordPinyin, color: toneColor(data.word.pinyin_display) }}>{data.word.pinyin_display}</span>
                   )}
                   {data.word.raw_glosses.length > 0 && (
                     <p style={s.wordGlosses}>

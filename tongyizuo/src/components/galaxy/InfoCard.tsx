@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { shortGloss } from '../SynonymGraph';
+import { shortGloss, toneColor } from '../SynonymGraph';
 
 interface InfoCardProps {
   simplified: string;
@@ -58,7 +58,7 @@ export function InfoCard({ simplified, pinyin, clusterLabel, core_scene, raw_glo
         >✕</button>
       )}
       <span className="zh" style={s.char}>{simplified}</span>
-      <span style={s.pinyin}>{pinyin}</span>
+      <span style={{ ...s.pinyin, color: toneColor(pinyin) }}>{pinyin}</span>
       {glossLine && <span style={s.glosses}>{glossLine}</span>}
       <span style={s.cluster}>{clusterLabel}</span>
       {core_scene && <p style={s.scene}>{core_scene}</p>}
