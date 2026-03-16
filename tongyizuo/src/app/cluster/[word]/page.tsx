@@ -276,7 +276,25 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
       <main style={s.main}>
         {loading && (
           <div style={s.loading}>
-            <span className="zh" style={s.loadingChar}>{simplified}</span>
+            <div style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* Outer slow reverse ring */}
+              <div style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                border: '1px solid transparent',
+                borderTopColor: 'rgba(217,164,65,0.12)',
+                borderRightColor: 'rgba(217,164,65,0.2)',
+                animation: 'spin 7s linear infinite reverse',
+              }} />
+              {/* Inner fast ring */}
+              <div style={{
+                position: 'absolute', inset: '12px', borderRadius: '50%',
+                border: '1px solid transparent',
+                borderTopColor: 'rgba(217,164,65,0.45)',
+                borderLeftColor: 'rgba(217,164,65,0.12)',
+                animation: 'spin 2.5s linear infinite',
+              }} />
+              <span className="zh" style={s.loadingChar}>{simplified}</span>
+            </div>
             <p style={s.loadingText}>mapping the constellation…</p>
             <p style={{ ...s.loadingHint, opacity: showSlowHint ? 1 : 0, transition: 'opacity 0.8s ease' }}>
               first visit may take 20–40s while we map synonyms
@@ -663,9 +681,9 @@ const s: Record<string, React.CSSProperties> = {
     height: '100%',
   },
   loadingChar: {
-    fontSize: '96px',
+    fontSize: '72px',
     color: '#d9a441',
-    textShadow: '0 0 60px rgba(217,164,65,0.35)',
+    textShadow: '0 0 40px rgba(217,164,65,0.35)',
     animation: 'pulse 2s ease-in-out infinite',
     lineHeight: 1,
   },
