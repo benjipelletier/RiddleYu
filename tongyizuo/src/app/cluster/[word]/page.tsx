@@ -110,7 +110,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                           key={cl.id}
                           style={{
                             ...s.clusterRow,
-                            opacity: isActive ? 1 : 0.3,
+                            opacity: activeClusterIdx === null ? 1 : isActive ? 1 : 0.3,
                             color: isActive ? color : `${color}aa`,
                             background: isActive ? `${color}12` : 'transparent',
                             borderColor: isActive ? `${color}88` : `${color}44`,
@@ -154,7 +154,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                           key={cl.id}
                           style={{
                             ...s.clusterRow,
-                            opacity: isActive ? 1 : 0.3,
+                            opacity: activeClusterIdx === null ? 1 : isActive ? 1 : 0.3,
                             color: isActive ? color : `${color}aa`,
                             background: isActive ? `${color}12` : 'transparent',
                             borderColor: isActive ? `${color}88` : `${color}44`,
