@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ClusterData } from '../../lib/types';
 import { WORD_COLORS } from './WordNode';
@@ -29,6 +29,12 @@ export function shortGloss(raw: string): string {
 export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = null }: Props) {
   const router = useRouter();
   const [clickedWord, setClickedWord] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 40);
+    return () => clearTimeout(t);
+  }, []);
 
   const K = clusters.length;
   const svgW = 900;
@@ -125,28 +131,32 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
           `}</style>
         </defs>
 
-        {/* Spokes: focus → each cluster gloss pill */}
-        {clusterCenters.map((cc, ci) => (
-          <line key={`trunk-${ci}`}
-            x1={cx} y1={cy} x2={cc.x} y2={cc.y}
-            stroke="rgba(217,164,65,0.18)" strokeWidth={1.2}
-            strokeDasharray="6 5"
-            style={{
-              opacity: activeClusterIdx !== null && activeClusterIdx !== ci ? 0.12 : 1,
-              transition: 'opacity 0.3s',
-            }} />
-        ))}
+        {/* Trunk spokes: center → each cluster gloss pill — fade in after nodes settle */}
+        {clusterCenters.map((cc, ci) => {
+          const lineDelay = ci * 60 + 320;
+          const dimmed = activeClusterIdx !== null && activeClusterIdx !== ci;
+          return (
+            <line key={`trunk-${ci}`}
+              x1={cx} y1={cy} x2={cc.x} y2={cc.y}
+              stroke="rgba(217,164,65,0.18)" strokeWidth={1.2}
+              strokeDasharray="6 5"
+              style={{
+                opacity: mounted ? (dimmed ? 0.12 : 1) : 0,
+                transition: `opacity 0.4s ease ${lineDelay}ms`,
+              }} />
+          );
+        })}
 
         {/* Per-cluster: spokes, cross-edges, gloss pill, member nodes */}
         {layouts.map(({ cluster, cc, members, memberPositions, crossEdges }, ci) => {
           const color = WORD_COLORS[ci % WORD_COLORS.length];
           const clusterDimmed = activeClusterIdx !== null && activeClusterIdx !== ci;
+          const clusterBaseDelay = ci * 60;
 
           return (
-            <g key={`cluster-${ci}`}
-              style={{ opacity: clusterDimmed ? 0.12 : 1, transition: 'opacity 0.3s' }}>
+            <g key={`cluster-${ci}`}>
 
-              {/* Spokes: gloss pill → members */}
+              {/* Spokes: gloss pill → members — fade in after nodes */}
               {members.map((m, mi) => {
                 const pos = memberPositions[mi];
                 const edgeCnt = cluster.edges.filter(
@@ -155,14 +165,19 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                 ).length;
                 const thick = 0.7 + (edgeCnt / 3) * 1.8;
                 const dash = edgeCnt >= 3 ? 'none' : edgeCnt === 2 ? '8 4' : '4 6';
+                const spokeDelay = clusterBaseDelay + mi * 20 + 280;
                 return (
                   <line key={`spoke-${ci}-${mi}`}
                     x1={cc.x} y1={cc.y} x2={pos.x} y2={pos.y}
-                    stroke={`${color}55`} strokeWidth={thick} strokeDasharray={dash} />
+                    stroke={`${color}55`} strokeWidth={thick} strokeDasharray={dash}
+                    style={{
+                      opacity: mounted ? (clusterDimmed ? 0.12 : 1) : 0,
+                      transition: `opacity 0.35s ease ${spokeDelay}ms`,
+                    }} />
                 );
               })}
 
-              {/* Cross-edges between members */}
+              {/* Cross-edges — fade in late */}
               {crossEdges.map(edge => {
                 const i1 = members.findIndex(m => m.simplified === edge.word1);
                 const i2 = members.findIndex(m => m.simplified === edge.word2);
@@ -171,7 +186,11 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                 const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
                 const pw = Math.min(edge.gloss.length * 6.5 + 18, 90), ph = 17;
                 return (
-                  <g key={`cross-${ci}-${edge.word1}-${edge.word2}`}>
+                  <g key={`cross-${ci}-${edge.word1}-${edge.word2}`}
+                    style={{
+                      opacity: mounted ? (clusterDimmed ? 0.12 : 1) : 0,
+                      transition: `opacity 0.35s ease ${clusterBaseDelay + 380}ms`,
+                    }}>
                     <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
                       stroke={`${color}55`} strokeWidth={1.2} strokeDasharray="5 4" />
                     <rect x={midX - pw / 2} y={midY - ph / 2} width={pw} height={ph} rx={ph / 2}
@@ -184,15 +203,24 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                 );
               })}
 
-              {/* Cluster gloss pill */}
+              {/* Cluster gloss pill — springs in from center */}
               {(() => {
                 const label = cluster.label;
                 const pw = Math.min(label.length * 7 + 24, 110), ph = 22;
+                const pillDelay = clusterBaseDelay + 40;
                 return (
-                  <g>
-                    <rect x={cc.x - pw / 2} y={cc.y - ph / 2} width={pw} height={ph} rx={ph / 2}
+                  <g style={{
+                    transform: mounted
+                      ? `translate(${cc.x}px, ${cc.y}px) scale(1)`
+                      : `translate(${cx}px, ${cy}px) scale(0.4)`,
+                    opacity: mounted ? (clusterDimmed ? 0.12 : 1) : 0,
+                    transition: `transform 0.55s cubic-bezier(0.34,1.56,0.64,1) ${pillDelay}ms, opacity 0.3s ease ${pillDelay}ms`,
+                    transformBox: 'fill-box',
+                    transformOrigin: 'center',
+                  }}>
+                    <rect x={-pw / 2} y={-ph / 2} width={pw} height={ph} rx={ph / 2}
                       fill="rgba(10,8,6,0.92)" stroke={`${color}66`} strokeWidth={1.2} />
-                    <text x={cc.x} y={cc.y} textAnchor="middle" dominantBaseline="middle"
+                    <text textAnchor="middle" dominantBaseline="middle"
                       fontSize={11} fill={`${color}dd`}
                       style={{ fontFamily: 'inherit', letterSpacing: '0.06em' }}>
                       {label}
@@ -201,19 +229,25 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                 );
               })()}
 
-              {/* Member nodes */}
+              {/* Member nodes — spring from center outward, staggered */}
               {members.map((member, mi) => {
                 const pos = memberPositions[mi];
                 const isClicked = clickedWord === member.simplified;
+                const nodeDelay = clusterBaseDelay + mi * 30;
                 const fSize = member.simplified.length <= 1 ? nodeR * 0.88
                   : member.simplified.length === 2 ? nodeR * 0.68
                   : nodeR * 0.52;
                 return (
                   <g key={member.simplified}
-                    transform={`translate(${pos.x},${pos.y})`}
                     onClick={() => navigateTo(member.simplified)}
-                    style={{ cursor: 'pointer' }}>
-                    {/* Ripple rings on click */}
+                    style={{
+                      transform: mounted
+                        ? `translate(${pos.x}px, ${pos.y}px)`
+                        : `translate(${cx}px, ${cy}px)`,
+                      opacity: mounted ? (clusterDimmed ? 0.12 : 1) : 0,
+                      transition: `transform 0.6s cubic-bezier(0.34,1.56,0.64,1) ${nodeDelay}ms, opacity 0.3s ease ${nodeDelay}ms`,
+                      cursor: 'pointer',
+                    }}>
                     {isClicked && <>
                       <circle r={nodeR + 4} fill="none" stroke={color} strokeWidth={2}
                         style={{ animation: 'nodeRipple 0.35s ease-out forwards', transformBox: 'fill-box', transformOrigin: 'center' }} />
@@ -222,11 +256,9 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
                     </>}
                     <g className={isClicked ? 'node-clicked' : ''}>
                       <circle r={nodeR} fill={isClicked ? `${color}22` : `${color}10`}
-                        stroke={color}
-                        strokeWidth={isClicked ? 2.2 : 1.4} />
+                        stroke={color} strokeWidth={isClicked ? 2.2 : 1.4} />
                       <text textAnchor="middle" dominantBaseline="middle"
-                        fontSize={fSize} className="zh"
-                        fill={color}>
+                        fontSize={fSize} className="zh" fill={color}>
                         {member.simplified}
                       </text>
                       <text y={nodeR + 12} textAnchor="middle" dominantBaseline="middle"
@@ -242,12 +274,16 @@ export default function SynonymGraph({ clusters, focusWord, activeClusterIdx = n
           );
         })}
 
-        {/* Focus node at center — not navigable (already here) */}
+        {/* Focus node at center — scales in */}
         {(() => {
           const fSize = focusWord.length <= 1 ? focusR * 0.92
             : focusWord.length === 2 ? focusR * 0.72 : focusR * 0.55;
           return (
-            <g transform={`translate(${cx},${cy})`}>
+            <g style={{
+              transform: `translate(${cx}px, ${cy}px)`,
+              opacity: mounted ? 1 : 0,
+              transition: 'opacity 0.4s ease 0ms',
+            }}>
               <circle r={focusR} fill="rgba(217,164,65,0.10)"
                 stroke="rgba(217,164,65,0.65)" strokeWidth={1.8} />
               <text textAnchor="middle" dominantBaseline="middle"
