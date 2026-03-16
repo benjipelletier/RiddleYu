@@ -10,6 +10,21 @@ interface Props {
 
 type AnswerState = 'unanswered' | 'correct' | 'wrong';
 
+// Inject challenge animations once
+if (typeof document !== 'undefined' && !document.getElementById('ch-anim')) {
+  const st = document.createElement('style');
+  st.id = 'ch-anim';
+  st.textContent = `
+    @keyframes correctPulse {
+      0%   { box-shadow: 0 0 0px rgba(0,0,0,0); }
+      40%  { box-shadow: 0 0 28px var(--pulse-color, rgba(65,217,114,0.6)); }
+      100% { box-shadow: 0 0 14px var(--pulse-color, rgba(65,217,114,0.3)); }
+    }
+    .ch-correct { animation: correctPulse 0.45s ease-out forwards; }
+  `;
+  document.head.appendChild(st);
+}
+
 export default function ChallengeMode({ cluster }: Props) {
   const situations = cluster.situations;
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -124,6 +139,7 @@ export default function ChallengeMode({ cluster }: Props) {
           return (
             <button
               key={member.simplified}
+              className={isAnswered && isCorrect ? 'ch-correct' : ''}
               style={{
                 ...s.choiceBtn,
                 border,
@@ -132,6 +148,7 @@ export default function ChallengeMode({ cluster }: Props) {
                 cursor: isAnswered ? 'default' : 'pointer',
                 opacity: isAnswered && !isCorrect && !isChosen ? 0.45 : 1,
                 transform: isHovered ? 'translateY(-2px)' : 'none',
+                ['--pulse-color' as any]: `${color}99`,
               }}
               onClick={() => handleAnswer(member)}
               onMouseEnter={() => !isAnswered && setHoveredId(member.id)}
