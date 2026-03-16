@@ -204,6 +204,7 @@ export default function GalaxyGraph() {
       const mx = (src.x + tgt.x) / 2;
       const my = (src.y! + tgt.y!) / 2;
       const glossText = link.glosses.slice(0, 2).join(' · ');
+      const hue = link.hue;
 
       const fontSize = 10 / globalScale;
       ctx.font = `400 ${fontSize}px 'JetBrains Mono', monospace`;
@@ -212,7 +213,7 @@ export default function GalaxyGraph() {
       const ph = fontSize * 1.6;
 
       ctx.fillStyle = `rgba(10,8,6,${0.95 * fadeAlpha})`;
-      ctx.strokeStyle = `rgba(217,164,65,${fadeAlpha})`;
+      ctx.strokeStyle = `hsla(${hue}, 60%, 65%, ${fadeAlpha * 0.8})`;
       ctx.lineWidth = 0.8 / globalScale;
       const rx = 3 / globalScale;
       // Rounded rect
@@ -230,7 +231,7 @@ export default function GalaxyGraph() {
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = `rgba(217,164,65,${fadeAlpha})`;
+      ctx.fillStyle = `hsla(${hue}, 60%, 72%, ${fadeAlpha})`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(glossText, mx, my);
