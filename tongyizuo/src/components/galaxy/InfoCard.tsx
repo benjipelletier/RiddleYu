@@ -130,11 +130,13 @@ const s: Record<string, React.CSSProperties> = {
   },
   scene: {
     fontSize: '12px',
-    color: 'rgba(232,213,176,0.55)',
+    color: 'rgba(232,213,176,0.5)',
     lineHeight: 1.5,
     fontStyle: 'italic',
     marginTop: '8px',
     marginBottom: '0',
+    borderLeft: '2px solid rgba(217,164,65,0.25)',
+    paddingLeft: '8px',
   },
   btn: {
     marginTop: '14px',

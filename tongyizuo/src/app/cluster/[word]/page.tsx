@@ -148,7 +148,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
             onMouseEnter={() => setBackHover(true)}
             onMouseLeave={() => setBackHover(false)}
           >
-            ← 星图
+            ← <span className="zh">星图</span>
           </button>
           {fromWord && (
             <>
@@ -804,11 +804,14 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: "'JetBrains Mono', monospace",
   },
   coreScene: {
-    fontSize: '14px',
-    color: 'rgba(232,213,176,0.55)',
+    fontSize: '12px',
+    color: 'rgba(232,213,176,0.5)',
     lineHeight: 1.6,
-    maxWidth: '560px',
+    maxWidth: '240px',
     fontStyle: 'italic',
+    borderLeft: '2px solid rgba(217,164,65,0.25)',
+    paddingLeft: '8px',
+    margin: '4px 0 0 0',
   },
   collStrip: {
     position: 'absolute',
