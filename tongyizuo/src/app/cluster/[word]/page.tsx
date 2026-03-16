@@ -53,6 +53,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
   const [backHover, setBackHover] = useState(false);
   const [fromHover, setFromHover] = useState(false);
   const [hoveredCollIdx, setHoveredCollIdx] = useState<number | null>(null);
+  const [hoveredHistoryWord, setHoveredHistoryWord] = useState<string | null>(null);
   const [hoveredClusterIdx, setHoveredClusterIdx] = useState<number | null>(null);
   const [hoveredMode, setHoveredMode] = useState<Mode | null>(null);
   const navInputRef = useRef<HTMLInputElement>(null);
@@ -240,14 +241,16 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                   key={w}
                   style={{
                     ...s.historyPill,
-                    color: isCurrent ? '#d9a441' : 'rgba(217,164,65,0.38)',
-                    background: isCurrent ? 'rgba(217,164,65,0.1)' : 'transparent',
-                    borderColor: isCurrent ? 'rgba(217,164,65,0.35)' : 'rgba(217,164,65,0.12)',
+                    color: isCurrent ? '#d9a441' : hoveredHistoryWord === w ? 'rgba(217,164,65,0.7)' : 'rgba(217,164,65,0.38)',
+                    background: isCurrent ? 'rgba(217,164,65,0.1)' : hoveredHistoryWord === w ? 'rgba(217,164,65,0.07)' : 'transparent',
+                    borderColor: isCurrent ? 'rgba(217,164,65,0.35)' : hoveredHistoryWord === w ? 'rgba(217,164,65,0.3)' : 'rgba(217,164,65,0.12)',
                     cursor: isCurrent ? 'default' : 'pointer',
                   }}
                   onClick={() => {
                     if (!isCurrent) navigate(router, `/cluster/${encodeURIComponent(w)}?from=${encodeURIComponent(simplified)}`);
                   }}
+                  onMouseEnter={() => !isCurrent && setHoveredHistoryWord(w)}
+                  onMouseLeave={() => setHoveredHistoryWord(null)}
                 >
                   <span className="zh">{w}</span>
                 </button>

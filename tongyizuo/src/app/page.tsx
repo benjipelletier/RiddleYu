@@ -100,7 +100,11 @@ export default function HomePage() {
                 value={input}
                 onChange={(e) => { setInput(e.target.value); setError(''); }}
                 placeholder="探索词语..."
-                style={s.input}
+                style={{
+                  ...s.input,
+                  borderColor: inputFocused ? 'rgba(217,164,65,0.6)' : 'rgba(217,164,65,0.3)',
+                  transition: 'border-color 0.15s',
+                }}
                 autoComplete="off"
                 spellCheck={false}
                 onFocus={() => setInputFocused(true)}
