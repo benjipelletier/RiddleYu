@@ -52,6 +52,7 @@ export default function ChallengeMode({ cluster }: Props) {
   const [chosenWordId, setChosenWordId] = useState<number | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [score, setScore] = useState({ correct: 0, total: 0 });
+  const [nextHover, setNextHover] = useState(false);
 
   const current = situations[currentIdx];
   const isAnswered = answerState !== 'unanswered';
@@ -220,7 +221,17 @@ export default function ChallengeMode({ cluster }: Props) {
 
       {/* Next button */}
       {isAnswered && (
-        <button style={s.nextBtn} onClick={handleNext}>
+        <button
+          style={{
+            ...s.nextBtn,
+            background: nextHover ? 'rgba(217,164,65,0.18)' : 'rgba(217,164,65,0.1)',
+            borderColor: nextHover ? 'rgba(217,164,65,0.5)' : 'rgba(217,164,65,0.3)',
+            transform: nextHover ? 'translateY(-1px)' : 'none',
+          }}
+          onClick={handleNext}
+          onMouseEnter={() => setNextHover(true)}
+          onMouseLeave={() => setNextHover(false)}
+        >
           {currentIdx < situations.length - 1 ? 'Next situation →' : 'Start over ↺'}
         </button>
       )}

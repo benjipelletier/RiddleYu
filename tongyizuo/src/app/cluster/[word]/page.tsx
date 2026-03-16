@@ -336,7 +336,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                     .slice(0, 12);
                   if (!colls.length) return null;
                   return (
-                    <div style={{ ...s.collStrip, borderTopColor: `${color}22` }}>
+                    <div className="coll-strip-enter" style={{ ...s.collStrip, borderTopColor: `${color}22` }}>
                       <span style={{ ...s.collLabel, color: `${color}66` }}>collocations</span>
                       <div style={s.collItems}>
                         {colls.map((c, i) => {
@@ -812,6 +812,11 @@ if (typeof document !== 'undefined' && !document.getElementById('cp-anim')) {
       0%, 100% { opacity: 0.7; text-shadow: 0 0 40px rgba(217,164,65,0.2); }
       50% { opacity: 1; text-shadow: 0 0 80px rgba(217,164,65,0.55); }
     }
+    @keyframes collSlideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .coll-strip-enter { animation: collSlideUp 0.22s cubic-bezier(0.22,1,0.36,1) forwards; }
   `;
   document.head.appendChild(style);
 }
