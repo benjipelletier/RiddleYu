@@ -4,8 +4,12 @@ import { useGame } from './hooks/useGame'
 import IntroScreen from './components/IntroScreen'
 import GameScreen from './components/GameScreen'
 import ResultScreen from './components/ResultScreen'
+import EmojiPrototype from './EmojiPrototype'
+
+const SHOW_PROTOTYPE = true
 
 export default function App() {
+  if (SHOW_PROTOTYPE) return <EmojiPrototype />
   const game = useGame()
 
   if (!game.puzzle) {
