@@ -13,44 +13,71 @@ There are no tests. Deployment is to Vercel via GitHub push.
 
 ## What this is
 
-A daily 成语 (Chinese four-character idiom) puzzle game, inspired by Wordle. The player solves 4 riddles to identify 4 characters, chains them together, and uncovers today's idiom. Built for people learning Chinese at a beginner level.
+A daily 成语 (Chinese four-character idiom) puzzle game with two phases. The player solves 4 idiom riddles (Connections-style), then slides the rows to reveal a hidden 5th 成语. Built for people learning Chinese at a beginner to intermediate level.
 
-## Game mechanics
+## Game phases
 
-1. A 4×4 grid of 16 Chinese characters is shown — shuffled, no visible grouping
-2. There are 4 riddles, one per character position in the 成语 (slot 0, 1, 2, 3)
-3. Riddles are revealed one at a time. Each riddle describes a **semantic category** that applies to multiple characters in the grid (e.g. "I am an animal" → 马, 龙, 虎, 牛 are all in the grid)
-4. The player clicks a character from the grid that matches the current riddle
-5. That character locks into the chain (slot 0 → 1 → 2 → 3), and the next riddle appears
-6. Once all 4 slots are filled, the player submits
-7. Feedback per character: 🟩 green = correct char correct slot, 🟨 yellow = correct char wrong slot, ⬜ grey = not in 成语
-8. 5 lives total. Wrong attempt resets the chain; player tries again with feedback visible
+### Phase 1 — Connections (`connections`)
 
-## Key data concept: slotMap
+1. A 4×4 grid of 16 Chinese characters is shown (all 4 solved 成语's characters shuffled together)
+2. One riddle at a time describes the **meaning/scene** of a whole 成语
+3. The player picks 4 characters from the grid they believe spell that 成语
+4. Submit: if all 4 belong to that 成语's group → correct, locked in; otherwise → lose a life
+5. Repeat for all 4 成语
+6. 5 lives shared across the whole connections phase
 
-Each of the 16 grid characters belongs to exactly one slot (0–3). `slotMap[i]` tells which slot `grid[i]` is an answer or imposter for. This controls which characters are selectable — only characters whose `slotMap` value equals `currentSlot` are clickable at any given time.
+### Phase 2 — Sliding (`sliding`)
 
-Example for 马到成功:
-- Slot 0 (马): real=马, imposters=龙,虎,牛 → all have slotMap value 0
-- Slot 1 (到): real=到, imposters=来,去,行 → all have slotMap value 1
+1. The 4 solved 成语 are shown as horizontal rows
+2. The player drags each row left/right to select which character is "active" for that row
+3. The 4 active characters (one per row, in row order) form the hidden 5th 成语
+4. Partial feedback: active character shown in yellow if correct for that row, green when all 4 match
+5. Win auto-detected when all 4 active chars match `hidden.chars`
+
+### Phase 3 — Result (`result`)
+
+Shows all 4 solved 成语 + the hidden 5th with meanings. Share button.
+
+## Key data concept: gridGroups
+
+Each of the 16 grid characters belongs to exactly one solved 成语 (0–3). `gridGroups[i]` is the group index for `grid[i]`. During connections phase, correctness is checked by group membership, not character values — this handles any potential duplicate characters across idioms.
+
+## Key data concept: hiddenPositions
+
+`hiddenPositions[i]` is the index (0–3) within `chengyus[i].chars` that contributes to the hidden 成语. Used in the sliding phase to know the target offset per row.
+
+Example for hidden 一马当先:
+- 一石二鸟 → 一 is at position 0 → hiddenPositions[0] = 0
+- 马到成功 → 马 is at position 0 → hiddenPositions[1] = 0
+- 当仁不让 → 当 is at position 0 → hiddenPositions[2] = 0
+- 争先恐后 → 先 is at position 1 → hiddenPositions[3] = 1
 
 ## Puzzle data shape
 
 ```json
 {
   "date": "YYYY-MM-DD",
-  "chengyu": ["字","字","字","字"],
-  "pinyin": "mǎ dào chéng gōng",
-  "meaning": "English meaning",
-  "origin": "One sentence historical context",
-  "riddles": [
-    { "type": "字谜|形谜|场景谜", "text": "Chinese riddle", "translation": "English translation of the riddle", "hint": "English hint for hint button" },
-    { "type": "...", "text": "...", "translation": "...", "hint": "..." },
-    { "type": "...", "text": "...", "translation": "...", "hint": "..." },
-    { "type": "...", "text": "...", "translation": "...", "hint": "..." }
+  "chengyus": [
+    {
+      "chars": ["字","字","字","字"],
+      "pinyin": "xxx xxx xxx xxx",
+      "meaning": "English meaning",
+      "riddle": "Chinese riddle describing the whole idiom's meaning/scene",
+      "riddle_translation": "English translation of the riddle",
+      "hint": "English hint shown when player taps hint button"
+    },
+    { ... },
+    { ... },
+    { ... }
   ],
+  "hidden": {
+    "chars": ["字","字","字","字"],
+    "pinyin": "xxx xxx xxx xxx",
+    "meaning": "English meaning"
+  },
+  "hiddenPositions": [0, 0, 0, 1],
   "grid": ["字", ...16 chars total, shuffled],
-  "slotMap": [0, 1, 2, ...16 slot indices matching grid positions]
+  "gridGroups": [0, ...16 group indices 0–3, same shuffle as grid]
 }
 ```
 
@@ -59,15 +86,16 @@ Example for 马到成功:
 - **Frontend**: React + Vite
 - **Hosting**: Vercel
 - **Daily puzzle API**: Vercel serverless function (`/api/puzzle.js`)
-- **Caching**: Vercel KV (Redis) — puzzle generated once per day, cached 25h
+- **Caching**: Vercel KV (Redis) — puzzle generated once per day
 - **AI generation**: Anthropic API (`claude-sonnet-4-20250514`)
 
 ## Current state
 
-- Hardcoded puzzles in `src/puzzles.js` (2 puzzles for dev/testing)
-- AI generation via Anthropic API is built in `api/puzzle.js` but not yet wired to the frontend
-- The frontend currently calls `getPuzzleForDate()` synchronously from hardcoded data
-- To switch to AI: make `getPuzzleForDate` async and fetch from `/api/puzzle?date=YYYY-MM-DD`
+- 1 hardcoded puzzle in `src/puzzles.js` for dev/testing (date: 2026-03-19)
+- AI generation via Anthropic API is in `api/generate.js`
+- `getPuzzleForDate()` in dev uses hardcoded data; in production fetches from `/api/puzzle?date=YYYY-MM-DD`
+- To manually trigger puzzle generation: `GET /api/generate?date=YYYY-MM-DD&force=true` with `Authorization: Bearer CRON_SECRET`
+- Old KV entries (pre-redesign, single-成语 format) will break the new frontend — flush them before going live
 
 ## File structure
 
@@ -75,17 +103,19 @@ Example for 马到成功:
 riddleyu/
 ├── src/
 │   ├── main.jsx              # Entry point
-│   ├── App.jsx               # Routes between intro/game/result phases
+│   ├── App.jsx               # Routes between intro/connections/sliding/result phases
 │   ├── index.css             # CSS variables, global reset
 │   ├── puzzles.js            # Hardcoded puzzle data + getPuzzleForDate()
 │   ├── hooks/
-│   │   └── useGame.js        # All game logic (state, selection, feedback, lives)
+│   │   └── useGame.js        # All game logic (state, selection, feedback, lives, sliding)
 │   └── components/
 │       ├── IntroScreen.jsx   # How-to-play + start button
-│       ├── GameScreen.jsx    # Main game: header, history, chain, riddle, grid, actions
-│       └── ResultScreen.jsx  # End screen: 成语 reveal, meaning, attempt history
+│       ├── GameScreen.jsx    # Connections phase: riddle, 16-char grid, selection, submit
+│       ├── SlidingScreen.jsx # Sliding phase: draggable rows, forming preview, win detection
+│       └── ResultScreen.jsx  # End screen: all 5 成语 revealed, share button
 ├── api/
-│   └── puzzle.js             # Vercel serverless: generate + cache daily puzzle
+│   ├── puzzle.js             # Vercel serverless: serve cached puzzle from KV
+│   └── generate.js           # Vercel serverless: generate puzzle via Claude + cache in KV
 ├── index.html
 ├── vite.config.js
 ├── vercel.json
@@ -99,31 +129,23 @@ Ink-on-paper feel. Warm cream tones (`#f5f0e8`). Noto Serif SC for Chinese chara
 
 All styles are inline JS objects defined in a `const s = { ... }` block at the bottom of each component file.
 
-## Riddle types
+## Riddle design (for whole-idiom riddles)
 
-Each riddle uses one of three types. The `type` field is informational; the frontend doesn't render it differently.
+Each solved 成语 gets ONE riddle describing its meaning or origin as a vivid scene. The riddle should:
+- Paint a specific scenario that points clearly to this idiom
+- Not name the idiom or any of its characters
+- Work for a beginner who may not know the idiom — the scene teaches as well as tests
 
-**字谜 (Character Composition)** — use when the character has 2+ clearly decomposable components.
-Describe how the parts combine without naming the character. e.g.:
-- 功: "出力又出工，缺一不可。" / "Effort and labor — neither can be missing." / hint: "工 (work) + 力 (strength) = 功"
-- 石: "山崖下藏着一张嘴，坚硬千年。" / "A mouth hidden beneath a cliff — hard for a thousand years." / hint: "厂 (cliff) + 口 (mouth) = 石"
-- 到: "持刀而至，方才到达。" / "Carry a blade beside 'arrive' — and you've gotten there." / hint: "至 (to reach) + 刂 (knife) = 到"
-
-**形谜 (Visual/Shape)** — use for visually simple characters (few strokes, geometric).
-Describe what you see without naming it. e.g.:
-- 一: "万物之始，我只有一笔，横贯天地。" / "The beginning of all things — just one stroke." / hint: "A single horizontal line"
-- 二: "比一多一笔，比三少一笔，两横平行。" / "One more than one, one fewer than three — two parallel lines." / hint: "Two horizontal strokes"
-
-**场景谜 (Scene Riddle)** — fallback when A/B don't work. A vivid specific scenario, NOT a broad category ("I am an animal" is forbidden). e.g.:
-- 马: "皇帝出征，骑着我才能打天下。" / "The emperor rides me to conquer the realm." / hint: "A powerful animal ridden by warriors and emperors"
-- 鸟: "春天清晨，我在树梢叫醒你。" / "On a spring morning, I wake you from the treetop." / hint: "A feathered creature that sings at dawn"
-
-The `translation` field is displayed below the Chinese riddle text in a small italic Playfair Display font, helping learners who can't fully read the Chinese. The `hint` is shown only when the player taps the hint button.
+Good examples:
+- 一石二鸟: "旅人投一石，双鸟齐落。一举，两获。" / "A traveler throws one stone — two birds fall. One move, two gains." / hint: "One action achieves two goals at once"
+- 马到成功: "将旗未落，战马蹄声中城门已开。" / "The battle flag still raised — city gates open to the sound of approaching hooves." / hint: "Success arrives the moment you do — no delay, no struggle"
 
 ## Things to keep in mind
 
-- This is a learning game — riddles and feedback should feel educational, not punishing
-- The grid must always look scrambled — never reveal column groupings visually
+- The 16 grid characters must all be distinct (no character appears in two different solved 成语)
+- The sliding constraint must hold: `chengyus[i].chars[hiddenPositions[i]] === hidden.chars[i]` for all i
+- `gridGroups` must be shuffled in the same permutation as `grid`
+- This is a learning game — riddles should feel poetic and educational, not punishing
 - Chinese characters should always use Noto Serif SC at generous size
 - The hint button exists so beginners aren't stuck — using it should feel fine, not penalised
-- Yellow feedback is important: "you found a real character but put it in the wrong slot" — make sure this is clearly communicated
+- `used_chengyu` in KV tracks all 5 成语 per day to prevent repeats across any slot
