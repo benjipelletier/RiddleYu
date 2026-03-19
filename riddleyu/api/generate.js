@@ -12,71 +12,88 @@ Your job is to generate a daily puzzle for a game called RiddleYu.
 
 You will output ONLY valid JSON, no markdown, no explanation, no preamble.`
 
-const USER_PROMPT = (date, usedChengyu, fixedChengyu) => `Generate a RiddleYu puzzle for ${date}.
-${fixedChengyu ? `\nYou MUST use this exact 成语: ${fixedChengyu.join('')} (${fixedChengyu.join('、')}). Do not choose a different one.\n` : ''}${!fixedChengyu && usedChengyu.length > 0 ? `\nDo NOT use any of these 成语, they have already been used: ${usedChengyu.join('、')}\n` : ''}
-Rules:
-1. ${fixedChengyu ? `Use the 成语 ${fixedChengyu.join('')} specified above.` : 'Choose a 成语 that is interesting, learnable, and not too obscure. Suitable for beginners to intermediate learners.'}
-2. For each of the 4 characters, choose exactly 3 imposter characters. Imposters must:
-   - Be common, recognizable Chinese characters
-   - NOT appear elsewhere in the 成语
-   - For TYPE C (场景谜): same semantic category as the real character
-   - For TYPE A (字谜) / TYPE B (形谜): visually similar to the real character (shared components, similar stroke count, or easily confused shape)
-3. Write a riddle for each character using ONE of these three types:
+const USER_PROMPT = (date, usedChengyu) => `Generate a RiddleYu puzzle for ${date}.
+${usedChengyu.length > 0 ? `\nDo NOT use any of these 成语, they have already been used:\n${usedChengyu.join('、')}\n` : ''}
 
-TYPE A: 字谜 (Character Composition)
-Use when: the character has 2+ clearly decomposable components (radicals/parts).
-Format: a short poetic sentence describing how the parts combine — without naming the character.
-Examples:
-  - 告 (gào): text="一口吃掉牛尾巴。" translation="One mouth eats the cow's tail." hint="牛 (without its last stroke) + 口 = 告"
-  - 功 (gōng): text="出力又出工，缺一不可。" translation="Effort and labor — neither can be missing." hint="工 (work) + 力 (strength) = 功"
-  - 明 (míng): text="日月同辉，照亮天地。" translation="Sun and moon shine together, lighting heaven and earth." hint="日 (sun) + 月 (moon) = 明"
-  - 好 (hǎo): text="女子相伴，其乐无穷。" translation="A woman and child together — boundless joy." hint="女 (woman) + 子 (child) = 好"
-  - 休 (xiū): text="人倚木而眠，停下了脚步。" translation="A person leans against a tree and rests, pausing their steps." hint="亻(person) + 木 (tree) = 休"
-  - 石 (shí): text="山崖下藏着一张嘴，坚硬千年。" translation="A mouth hidden beneath a cliff — hard for a thousand years." hint="厂 (cliff/overhang) + 口 (mouth) = 石"
-  - 到 (dào): text="持刀而至，方才到达。" translation="Carry a blade beside 'arrive' — and you've gotten there." hint="至 (to reach) + 刂 (knife radical) = 到"
+## Game overview
 
-TYPE B: 形谜 (Visual/Shape Riddle)
-Use when: the character is visually simple — few strokes, geometric, or iconic in shape.
-Format: describe what you see when looking at the character — without naming it.
-Examples:
-  - 一 (yī): text="万物之始，我只有一笔，横贯天地。" translation="The beginning of all things — just one stroke, crossing heaven and earth." hint="A single horizontal line — the simplest character"
-  - 三 (sān): text="三根横骨叠起来，一根比一根长。" translation="Three horizontal bones stacked, each longer than the last." hint="Three horizontal strokes"
-  - 二 (èr): text="比一多一笔，比三少一笔，两横平行。" translation="One more stroke than one, one fewer than three — two parallel lines." hint="Two horizontal strokes, one above the other"
-  - 山 (shān): text="中间高，两边低，三峰并立。" translation="High in the middle, low on both sides — three peaks standing together." hint="Three peaks, the center one tallest"
-  - 口 (kǒu): text="四面有墙，中间是空的，是个方框。" translation="Walls on all four sides, empty in the middle — a square frame." hint="A simple square shape"
-  - 人 (rén): text="两腿叉开站稳了，撑起天地。" translation="Two legs spread apart, standing firm, holding up heaven and earth." hint="Two diagonal strokes, like a person standing"
+The puzzle has TWO phases:
 
-TYPE C: 场景谜 (Scene Riddle)
-Use when: the character doesn't decompose cleanly, or TYPE A/B don't produce an interesting riddle.
-Format: a vivid, specific scenario that points to the character — NOT a broad category. "我是一种动物" is forbidden. The scene must require real inference.
-Examples:
-  - 马 (mǎ): text="皇帝出征，骑着我才能打天下。" translation="The emperor rides me to conquer the realm." hint="A powerful animal ridden by warriors and emperors into battle"
-  - 鸟 (niǎo): text="春天清晨，我在树梢叫醒你。" translation="On a spring morning, I wake you from the treetop." hint="A feathered creature that sings at dawn"
-  - 成 (chéng): text="万事开头难，坚持到最后，空白变成了我。" translation="Everything is hard at first — persist to the end, and emptiness becomes me." hint="What happens when a task is finally finished — accomplished, complete"
-  - 功 (gōng, if not using 字谜): text="十年苦读，才能得到我。" translation="Ten years of hard study — only then can you earn me." hint="What you gain after long effort — merit, achievement"
-  - 石 (shí, if not using 字谜): text="山里沉睡千年，斧头也奈我不何。" translation="Asleep in the mountains for a thousand years — even an axe struggles with me." hint="A hard, ancient natural material found in mountains and riverbeds"
+**Phase 1 — Connections:** The player sees 16 Chinese characters in a grid. One riddle at a time describes a whole 成语. They pick the 4 characters that spell it. Repeat for all 4 成语.
 
-4. For each riddle the hint (shown only when player taps the hint button) must be:
-   - TYPE A: the component breakdown, e.g. "工 (work) + 力 (strength) = 功"
-   - TYPE B: a plain visual description, e.g. "Two horizontal strokes, one above the other"
-   - TYPE C: a direct English clue pointing to the semantic category
-5. The grid array must contain all 16 characters (4 real + 12 imposters) shuffled randomly.
+**Phase 2 — Sliding:** The 4 solved 成语 are shown as rows. The player drags each row left/right to select one character per row. The 4 selected characters (one from each row, in row order) must spell a hidden 5th 成语.
 
-Output this exact JSON shape:
+## How to construct the puzzle
+
+**Step 1: Choose the hidden 成语 first.**
+Pick a well-known, meaningful 成语 (4 characters). This is the hidden finale.
+
+**Step 2: Choose 4 solved 成语.**
+Each solved 成语 must contain one character from the hidden 成语, in order:
+- solved[0] must contain hidden[0] somewhere in its 4 characters
+- solved[1] must contain hidden[1] somewhere in its 4 characters
+- solved[2] must contain hidden[2] somewhere in its 4 characters
+- solved[3] must contain hidden[3] somewhere in its 4 characters
+
+Record which position (0, 1, 2, or 3) in each solved 成语 holds the hidden character — this becomes hiddenPositions.
+
+Example:
+- hidden: 一马当先 → chars [一, 马, 当, 先]
+- solved[0]: 一石二鸟 → 一 is at position 0 → hiddenPositions[0] = 0
+- solved[1]: 马到成功 → 马 is at position 0 → hiddenPositions[1] = 0
+- solved[2]: 当仁不让 → 当 is at position 0 → hiddenPositions[2] = 0
+- solved[3]: 争先恐后 → 先 is at position 1 → hiddenPositions[3] = 1
+
+**Step 3: Write one riddle for each solved 成语.**
+The riddle describes the MEANING or ORIGIN of the whole idiom — a vivid scene or story that points clearly to this specific idiom without naming it. Do not write riddles for individual characters.
+
+Riddle format:
+- text: a short vivid Chinese sentence (1–2 sentences)
+- riddle_translation: English translation of the riddle text
+- hint: a direct English hint naming the concept or situation
+
+Good riddle examples:
+- 一石二鸟: text="旅人投一石，双鸟齐落。一举，两获。" translation="A traveler throws one stone — two birds fall. One move, two gains." hint="One action achieves two goals at once"
+- 马到成功: text="将旗未落，战马蹄声中城门已开。" translation="The battle flag still raised — city gates open to the sound of approaching hooves." hint="Success arrives the moment you do — no delay, no struggle"
+
+**Step 4: Build the grid.**
+The grid has 16 characters: all 4 characters from each of the 4 solved 成语 (4 × 4 = 16). Shuffle them randomly.
+
+gridGroups is a parallel array: gridGroups[i] = which solved 成语 index (0–3) the character at grid[i] belongs to. Shuffle grid and gridGroups together (same permutation).
+
+## Rules
+
+- All 5 成语 must be real, well-known Chinese idioms
+- The 4 solved 成语 must be suitable for beginner–intermediate learners
+- No character may appear in two different solved 成语 (the 16 grid chars must all be distinct)
+- The hidden 成語 character in each row must come from a different solved 成语 (one per row)
+- Riddles must not name the 成语 or any of its characters directly
+- Choose 4 solved 成语 with varied themes (not all battle idioms, not all animal idioms)
+
+Output this exact JSON shape (no markdown, no extra text):
 {
   "date": "${date}",
-  "chengyu": ["字","字","字","字"],
-  "pinyin": "xxx xxx xxx xxx",
-  "meaning": "English meaning of the idiom",
-  "origin": "One sentence about the origin or historical context in English",
-  "origin_zh": "同一个故事，用简单的中文写，一到两句话",
-  "riddles": [
-    { "type": "字谜|形谜|场景谜", "text": "Chinese riddle for char 1", "translation": "English translation of the riddle", "hint": "English hint" },
-    { "type": "字谜|形谜|场景谜", "text": "Chinese riddle for char 2", "translation": "English translation of the riddle", "hint": "English hint" },
-    { "type": "字谜|形谜|场景谜", "text": "Chinese riddle for char 3", "translation": "English translation of the riddle", "hint": "English hint" },
-    { "type": "字谜|形谜|场景谜", "text": "Chinese riddle for char 4", "translation": "English translation of the riddle", "hint": "English hint" }
+  "chengyus": [
+    {
+      "chars": ["字","字","字","字"],
+      "pinyin": "xxx xxx xxx xxx",
+      "meaning": "English meaning",
+      "riddle": "Chinese riddle text",
+      "riddle_translation": "English translation of riddle",
+      "hint": "English hint"
+    },
+    { "chars": [...], "pinyin": "...", "meaning": "...", "riddle": "...", "riddle_translation": "...", "hint": "..." },
+    { "chars": [...], "pinyin": "...", "meaning": "...", "riddle": "...", "riddle_translation": "...", "hint": "..." },
+    { "chars": [...], "pinyin": "...", "meaning": "...", "riddle": "...", "riddle_translation": "...", "hint": "..." }
   ],
-  "grid": ["字",...16 chars shuffled...]
+  "hidden": {
+    "chars": ["字","字","字","字"],
+    "pinyin": "xxx xxx xxx xxx",
+    "meaning": "English meaning"
+  },
+  "hiddenPositions": [0, 0, 0, 1],
+  "grid": ["字",...16 chars shuffled...],
+  "gridGroups": [0,...16 group indices 0-3, same shuffle as grid...]
 }`
 
 export default async function handler(req, res) {
@@ -87,45 +104,51 @@ export default async function handler(req, res) {
   const date = req.query.date || new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
 
   // Check for existing puzzle
-  let fixedChengyu = null
-  let usedChengyu = []
-
   try {
     const existing = await kv.get(`puzzle:${date}`)
-    if (existing) {
-      if (req.query.force !== 'true') {
-        return res.status(200).json({ status: 'already cached', date })
-      }
-      // Force regen — reuse same 成语
-      fixedChengyu = existing.chengyu
+    if (existing && req.query.force !== 'true') {
+      return res.status(200).json({ status: 'already cached', date })
     }
   } catch (e) {
     console.error('KV read error:', e)
   }
 
-  // Fetch used 成语 to avoid duplicates (only needed when picking a new one)
-  if (!fixedChengyu) {
-    try {
-      usedChengyu = (await kv.get('used_chengyu')) || []
-    } catch (e) {
-      console.error('KV read error (used_chengyu):', e)
-    }
+  // Fetch used 成语 to avoid duplicates
+  let usedChengyu = []
+  try {
+    usedChengyu = (await kv.get('used_chengyu')) || []
+  } catch (e) {
+    console.error('KV read error (used_chengyu):', e)
   }
 
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
+      max_tokens: 3000,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: USER_PROMPT(date, usedChengyu, fixedChengyu) }],
+      messages: [{ role: 'user', content: USER_PROMPT(date, usedChengyu) }],
     })
 
     const puzzle = JSON.parse(message.content[0].text.trim())
 
-    await kv.set(`puzzle:${date}`, puzzle)
-    if (!fixedChengyu) {
-      await kv.set('used_chengyu', [...usedChengyu, puzzle.chengyu.join('')])
+    // Validate the sliding constraint: each solved chengyu must contain the expected hidden char
+    for (let i = 0; i < 4; i++) {
+      const expectedChar = puzzle.hidden.chars[i]
+      const pos = puzzle.hiddenPositions[i]
+      if (puzzle.chengyus[i].chars[pos] !== expectedChar) {
+        throw new Error(`Sliding constraint violated: chengyus[${i}].chars[${pos}] should be ${expectedChar}`)
+      }
     }
+
+    await kv.set(`puzzle:${date}`, puzzle)
+
+    // Record all 5 成语 as used (4 solved + 1 hidden)
+    const newEntries = [
+      ...puzzle.chengyus.map(cy => cy.chars.join('')),
+      puzzle.hidden.chars.join(''),
+    ]
+    const dedupedUsed = [...new Set([...usedChengyu, ...newEntries])]
+    await kv.set('used_chengyu', dedupedUsed)
 
     return res.status(200).json({ status: 'generated', date })
   } catch (e) {
