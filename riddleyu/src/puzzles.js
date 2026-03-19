@@ -21,6 +21,7 @@ export const HARDCODED_PUZZLES = [
         riddle: "旅人投一石，双鸟齐落。一举，两获。",
         riddle_translation: "A traveler throws one stone — two birds fall. One move, two gains.",
         hint: "One action achieves two goals at once",
+        derivation: null, // no classical derivation in dataset
       },
       {
         chars: ["马", "到", "成", "功"],
@@ -29,6 +30,7 @@ export const HARDCODED_PUZZLES = [
         riddle: "将旗未落，战马蹄声中城门已开。",
         riddle_translation: "The battle flag still raised — city gates open to the sound of approaching hooves.",
         hint: "Success arrives the moment you do — no delay, no struggle",
+        derivation: "元·无名氏《小尉迟》第二折：那老尉迟这一去，马到成功。",
       },
       {
         chars: ["当", "仁", "不", "让"],
@@ -37,6 +39,7 @@ export const HARDCODED_PUZZLES = [
         riddle: "皇帝问谁敢直言。一位大臣迈步向前，不让他人。",
         riddle_translation: "The emperor asks who dares speak truth. One minister steps forward, yielding to no one.",
         hint: "When duty calls, a person of integrity steps up without waiting",
+        derivation: "《论语·卫灵公》：子曰：'当仁，不让于师。'",
       },
       {
         chars: ["争", "先", "恐", "后"],
@@ -45,6 +48,7 @@ export const HARDCODED_PUZZLES = [
         riddle: "城门一开，百人蜂拥，人人唯恐落于人后。",
         riddle_translation: "The gates open — a hundred people surge forward, each terrified of falling even one step behind.",
         hint: "A frantic rush where everyone fears being last",
+        derivation: "清·张春帆《宦海》第十四回：一个个争先恐后的直抢上来。",
       },
     ],
     hidden: {

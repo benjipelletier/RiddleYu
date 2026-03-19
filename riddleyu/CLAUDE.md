@@ -129,16 +129,25 @@ Ink-on-paper feel. Warm cream tones (`#f5f0e8`). Noto Serif SC for Chinese chara
 
 All styles are inline JS objects defined in a `const s = { ... }` block at the bottom of each component file.
 
-## Riddle design (for whole-idiom riddles)
+## Riddle design
 
-Each solved 成语 gets ONE riddle describing its meaning or origin as a vivid scene. The riddle should:
-- Paint a specific scenario that points clearly to this idiom
-- Not name the idiom or any of its characters
-- Work for a beginner who may not know the idiom — the scene teaches as well as tests
+Each solved 成语 has three progressive reveal fields:
 
-Good examples:
-- 一石二鸟: "旅人投一石，双鸟齐落。一举，两获。" / "A traveler throws one stone — two birds fall. One move, two gains." / hint: "One action achieves two goals at once"
-- 马到成功: "将旗未落，战马蹄声中城门已开。" / "The battle flag still raised — city gates open to the sound of approaching hooves." / hint: "Success arrives the moment you do — no delay, no struggle"
+- **`riddle`**: Real classical Chinese derivation text from the bundled idiom dataset (`data/idiom.json`, source: pwxcoo/chinese-xinhua, CC0). E.g. `《论语·卫灵公》：子曰：'当仁，不让于师。'`
+- **`riddle_translation`**: AI-generated English translation of the classical text. Still indirect — translates the story, doesn't name the idiom.
+- **`hint`**: Direct English meaning of the idiom (gives it away — that's fine, it's a learning game).
+
+### Reveal flow (UI)
+
+```
+Level 0: riddle (classical Chinese) only + "译 · translate" button
+Level 1: + riddle_translation shown + "提示 · hint" button
+Level 2: + hint shown, no button
+```
+
+### If an idiom has no classical derivation
+
+If `derivation` is `"无"` in the dataset, the `riddle` field uses an AI-written vivid Chinese scene as a fallback (same style as the old riddles). Log a warning during generation.
 
 ## Things to keep in mind
 

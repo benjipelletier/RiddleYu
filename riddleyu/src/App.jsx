@@ -43,6 +43,10 @@ export default function App() {
         lives={game.lives}
         maxLives={game.maxLives}
         wrongFlash={game.wrongFlash}
+        attempts={game.attempts}
+        flashCorrect={game.flashCorrect}
+        solveOverlay={game.solveOverlay}
+        dismissOverlay={game.dismissOverlay}
         toggleSelect={game.toggleSelect}
         submitGroup={game.submitGroup}
         resetSelection={game.resetSelection}

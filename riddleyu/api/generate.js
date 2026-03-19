@@ -4,6 +4,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import { kv } from '@vercel/kv'
+import idiomData from '../data/idiom.json' with { type: 'json' }
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -12,7 +13,7 @@ Your job is to generate a daily puzzle for a game called RiddleYu.
 
 You will output ONLY valid JSON, no markdown, no explanation, no preamble.`
 
-const USER_PROMPT = (date, usedChengyu) => `Generate a RiddleYu puzzle for ${date}.
+const STRUCTURE_PROMPT = (date, usedChengyu) => `Generate a RiddleYu puzzle structure for ${date}.
 ${usedChengyu.length > 0 ? `\nDo NOT use any of these 成语, they have already been used:\n${usedChengyu.join('、')}\n` : ''}
 
 ## Game overview
@@ -44,19 +45,7 @@ Example:
 - solved[2]: 当仁不让 → 当 is at position 0 → hiddenPositions[2] = 0
 - solved[3]: 争先恐后 → 先 is at position 1 → hiddenPositions[3] = 1
 
-**Step 3: Write one riddle for each solved 成语.**
-The riddle describes the MEANING or ORIGIN of the whole idiom — a vivid scene or story that points clearly to this specific idiom without naming it. Do not write riddles for individual characters.
-
-Riddle format:
-- text: a short vivid Chinese sentence (1–2 sentences)
-- riddle_translation: English translation of the riddle text
-- hint: a direct English hint naming the concept or situation
-
-Good riddle examples:
-- 一石二鸟: text="旅人投一石，双鸟齐落。一举，两获。" translation="A traveler throws one stone — two birds fall. One move, two gains." hint="One action achieves two goals at once"
-- 马到成功: text="将旗未落，战马蹄声中城门已开。" translation="The battle flag still raised — city gates open to the sound of approaching hooves." hint="Success arrives the moment you do — no delay, no struggle"
-
-**Step 4: Build the grid.**
+**Step 3: Build the grid.**
 The grid has 16 characters: all 4 characters from each of the 4 solved 成语 (4 × 4 = 16). Shuffle them randomly.
 
 gridGroups is a parallel array: gridGroups[i] = which solved 成语 index (0–3) the character at grid[i] belongs to. Shuffle grid and gridGroups together (same permutation).
@@ -67,24 +56,16 @@ gridGroups is a parallel array: gridGroups[i] = which solved 成语 index (0–3
 - The 4 solved 成语 must be suitable for beginner–intermediate learners
 - No character may appear in two different solved 成语 (the 16 grid chars must all be distinct)
 - The hidden 成語 character in each row must come from a different solved 成语 (one per row)
-- Riddles must not name the 成语 or any of its characters directly
 - Choose 4 solved 成语 with varied themes (not all battle idioms, not all animal idioms)
 
 Output this exact JSON shape (no markdown, no extra text):
 {
   "date": "${date}",
   "chengyus": [
-    {
-      "chars": ["字","字","字","字"],
-      "pinyin": "xxx xxx xxx xxx",
-      "meaning": "English meaning",
-      "riddle": "Chinese riddle text",
-      "riddle_translation": "English translation of riddle",
-      "hint": "English hint"
-    },
-    { "chars": [...], "pinyin": "...", "meaning": "...", "riddle": "...", "riddle_translation": "...", "hint": "..." },
-    { "chars": [...], "pinyin": "...", "meaning": "...", "riddle": "...", "riddle_translation": "...", "hint": "..." },
-    { "chars": [...], "pinyin": "...", "meaning": "...", "riddle": "...", "riddle_translation": "...", "hint": "..." }
+    { "chars": ["字","字","字","字"], "pinyin": "xxx xxx xxx xxx", "meaning": "English meaning" },
+    { "chars": [...], "pinyin": "...", "meaning": "..." },
+    { "chars": [...], "pinyin": "...", "meaning": "..." },
+    { "chars": [...], "pinyin": "...", "meaning": "..." }
   ],
   "hidden": {
     "chars": ["字","字","字","字"],
@@ -95,6 +76,33 @@ Output this exact JSON shape (no markdown, no extra text):
   "grid": ["字",...16 chars shuffled...],
   "gridGroups": [0,...16 group indices 0-3, same shuffle as grid...]
 }`
+
+const RIDDLES_PROMPT = (idioms) => `For each of the following Chinese idioms, generate a riddle, translation, and hint.
+
+riddle: A short vivid Chinese sentence (1–2 sentences) describing the MEANING of the idiom as an evocative scene. Do NOT name the idiom or any of its characters. Write your own creative description — do NOT reproduce any classical source text.
+riddle_translation: English translation of your riddle text.
+hint: A direct English explanation of what the idiom means (1 short sentence).
+
+${idioms.map((item, i) => {
+  const ctx = item.derivation ? `\nClassical context (for your reference only, do NOT copy verbatim): "${item.derivation}"` : ''
+  return `${i + 1}. ${item.word}${ctx}`
+}).join('\n\n')}
+
+Output ONLY this JSON array (no markdown, no extra text):
+[
+  { "riddle": "...", "riddle_translation": "...", "hint": "..." },
+  { "riddle": "...", "riddle_translation": "...", "hint": "..." },
+  { "riddle": "...", "riddle_translation": "...", "hint": "..." },
+  { "riddle": "...", "riddle_translation": "...", "hint": "..." }
+]`
+
+function getDerivation(chars) {
+  const word = chars.join('')
+  const entry = idiomData.find(e => e.word === word)
+  if (!entry || !entry.derivation || entry.derivation === '无') return null
+  // Strip trailing Chinese right quotation mark artifact if present
+  return entry.derivation.replace(/\u201d$/, '')
+}
 
 export default async function handler(req, res) {
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -122,22 +130,52 @@ export default async function handler(req, res) {
   }
 
   try {
-    const message = await client.messages.create({
+    // Call 1: Generate structure
+    const structureMsg = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 3000,
+      max_tokens: 2000,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: USER_PROMPT(date, usedChengyu) }],
+      messages: [{ role: 'user', content: STRUCTURE_PROMPT(date, usedChengyu) }],
     })
+    const structure = JSON.parse(structureMsg.content[0].text.trim())
 
-    const puzzle = JSON.parse(message.content[0].text.trim())
-
-    // Validate the sliding constraint: each solved chengyu must contain the expected hidden char
+    // Validate sliding constraint
     for (let i = 0; i < 4; i++) {
-      const expectedChar = puzzle.hidden.chars[i]
-      const pos = puzzle.hiddenPositions[i]
-      if (puzzle.chengyus[i].chars[pos] !== expectedChar) {
+      const expectedChar = structure.hidden.chars[i]
+      const pos = structure.hiddenPositions[i]
+      if (structure.chengyus[i].chars[pos] !== expectedChar) {
         throw new Error(`Sliding constraint violated: chengyus[${i}].chars[${pos}] should be ${expectedChar}`)
       }
+    }
+
+    // Dataset lookup: get real classical derivation for each idiom
+    const idiomRiddles = structure.chengyus.map(cy => {
+      const derivation = getDerivation(cy.chars)
+      if (!derivation) {
+        console.warn(`No derivation found for ${cy.chars.join('')} — will use fallback`)
+      }
+      return { word: cy.chars.join(''), derivation: derivation || null }
+    })
+
+    // Call 2: Generate riddle translations + hints
+    const riddlesMsg = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: RIDDLES_PROMPT(idiomRiddles) }],
+    })
+    const riddles = JSON.parse(riddlesMsg.content[0].text.trim())
+
+    // Merge: combine structure + real riddle texts + translations + hints
+    const puzzle = {
+      ...structure,
+      chengyus: structure.chengyus.map((cy, i) => ({
+        ...cy,
+        riddle: riddles[i].riddle,
+        riddle_translation: riddles[i].riddle_translation,
+        hint: riddles[i].hint,
+        derivation: idiomRiddles[i].derivation || null,
+      })),
     }
 
     await kv.set(`puzzle:${date}`, puzzle)

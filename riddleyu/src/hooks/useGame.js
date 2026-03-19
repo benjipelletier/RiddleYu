@@ -12,6 +12,8 @@ export function useGame() {
   const [lives, setLives] = useState(MAX_LIVES)
   const [attempts, setAttempts] = useState([]) // { group, chars, correct }
   const [wrongFlash, setWrongFlash] = useState(false)
+  const [flashCorrect, setFlashCorrect] = useState(false)
+  const [solveOverlay, setSolveOverlay] = useState(null) // null | 0|1|2|3 (chengyu index)
   const [offsets, setOffsets] = useState([0, 0, 0, 0]) // sliding phase: active char index per row
   const [won, setWon] = useState(false)
 
@@ -40,18 +42,24 @@ export function useGame() {
     const selectedGroups = selected.map(i => puzzle.gridGroups[i])
     const correct = selectedGroups.every(g => g === currentChengyu)
     const selectedChars = selected.map(i => puzzle.grid[i])
-    setAttempts(prev => [...prev, { group: currentChengyu, chars: selectedChars, correct }])
+    const targetChars = puzzle.chengyus[currentChengyu].chars
+    const colors = selectedChars.map((ch, i) => {
+      if (ch === targetChars[i]) return 'green'
+      if (targetChars.includes(ch)) return 'yellow'
+      return 'grey'
+    })
+    setAttempts(prev => [...prev, { group: currentChengyu, chars: selectedChars, correct, colors }])
 
     if (correct) {
-      const newSolved = [...solvedGroups]
-      newSolved[currentChengyu] = true
-      setSolvedGroups(newSolved)
-      setSelected([])
-      if (currentChengyu === 3) {
-        setTimeout(() => setPhase('sliding'), 700)
-      } else {
-        setTimeout(() => setCurrentChengyu(prev => prev + 1), 400)
-      }
+      setFlashCorrect(true)
+      setTimeout(() => {
+        setFlashCorrect(false)
+        const newSolved = [...solvedGroups]
+        newSolved[currentChengyu] = true
+        setSolvedGroups(newSolved)
+        setSelected([])
+        setSolveOverlay(currentChengyu) // show overlay AFTER grid updates
+      }, 700)
     } else {
       setWrongFlash(true)
       setTimeout(() => {
@@ -66,6 +74,16 @@ export function useGame() {
 
   function resetSelection() {
     setSelected([])
+  }
+
+  function dismissOverlay() {
+    const solved = solveOverlay
+    setSolveOverlay(null)
+    if (solved === 3) {
+      setPhase('sliding')
+    } else {
+      setCurrentChengyu(solved + 1)
+    }
   }
 
   // --- SLIDING PHASE ---
@@ -96,12 +114,15 @@ export function useGame() {
     maxLives: MAX_LIVES,
     attempts,
     wrongFlash,
+    flashCorrect,
+    solveOverlay,
     offsets,
     won,
     startGame,
     toggleSelect,
     submitGroup,
     resetSelection,
+    dismissOverlay,
     updateOffset,
   }
 }

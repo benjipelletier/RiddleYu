@@ -47,6 +47,7 @@ export default function ResultScreen({ puzzle, won, attempts, lives, maxLives })
                 <div style={s.chengyuMeta}>
                   <span style={s.pinyin}>{cy.pinyin}</span>
                   <span style={s.meaning}>{cy.meaning}</span>
+                  {cy.derivation && <span style={s.derivation}>{cy.derivation}</span>}
                 </div>
               </div>
             )
@@ -203,6 +204,15 @@ const s = {
     color: 'var(--grey)',
     lineHeight: 1.5,
     display: 'block',
+  },
+  derivation: {
+    fontSize: 10,
+    color: '#b0a898',
+    fontStyle: 'italic',
+    fontFamily: "'Noto Serif SC', serif",
+    lineHeight: 1.5,
+    display: 'block',
+    marginTop: 2,
   },
   hiddenSection: {
     display: 'flex',

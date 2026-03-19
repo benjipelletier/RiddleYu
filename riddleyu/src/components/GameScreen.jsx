@@ -1,23 +1,36 @@
 import React, { useState } from 'react'
 
-export default function GameScreen({
-  puzzle,
-  currentChengyu,
-  selected,
-  solvedGroups,
-  lives,
-  maxLives,
-  wrongFlash,
-  toggleSelect,
-  submitGroup,
-  resetSelection,
-}) {
-  const [showHint, setShowHint] = useState(false)
+function computeDisplaySlots(puzzle, solvedGroups) {
+  const slots = []
+  for (let i = 0; i < 4; i++) {
+    if (solvedGroups[i]) {
+      puzzle.chengyus[i].chars.forEach((char, pos) => {
+        slots.push({ type: 'solved', group: i, char, charPos: pos })
+      })
+    }
+  }
+  puzzle.grid.forEach((char, gi) => {
+    const group = puzzle.gridGroups[gi]
+    if (!solvedGroups[group]) {
+      slots.push({ type: 'unsolved', gridIndex: gi, char, group })
+    }
+  })
+  return slots
+}
 
-  React.useEffect(() => { setShowHint(false) }, [currentChengyu])
+export default function GameScreen({
+  puzzle, currentChengyu, selected, solvedGroups, lives, maxLives,
+  wrongFlash, flashCorrect, toggleSelect, submitGroup, resetSelection,
+  attempts, solveOverlay, dismissOverlay,
+}) {
+  const [revealLevel, setRevealLevel] = useState(0)
+  React.useEffect(() => { setRevealLevel(0) }, [currentChengyu])
 
   const riddle = puzzle.chengyus[currentChengyu]
-  const solvedCount = solvedGroups.filter(Boolean).length
+  const displaySlots = computeDisplaySlots(puzzle, solvedGroups)
+  const currentAttempts = attempts.filter(a => a.group === currentChengyu && !a.correct)
+  const isInteractionDisabled = !!flashCorrect
+  const lastWrongAttempt = wrongFlash ? currentAttempts.at(-1) : null
 
   return (
     <div style={s.root}>
@@ -34,20 +47,6 @@ export default function GameScreen({
           ))}
         </div>
       </div>
-
-      {/* Solved groups */}
-      {solvedGroups.some(Boolean) && (
-        <div style={s.solvedSection}>
-          {puzzle.chengyus.map((cy, i) => !solvedGroups[i] ? null : (
-            <div key={i} style={s.solvedRow}>
-              {cy.chars.map((c, j) => (
-                <div key={j} style={s.solvedChar}>{c}</div>
-              ))}
-              <span style={s.solvedPinyin}>{cy.pinyin}</span>
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Progress */}
       <div style={s.progress}>
@@ -66,38 +65,80 @@ export default function GameScreen({
       <div style={s.riddleBox}>
         <div style={s.riddleTag}>谜 · riddle</div>
         <p style={s.riddleText}>{riddle.riddle}</p>
-        <p style={s.riddleTranslation}>{riddle.riddle_translation}</p>
-        {showHint
-          ? <p style={s.hint}>💡 {riddle.hint}</p>
-          : <button style={s.hintBtn} onClick={() => setShowHint(true)}>提示 · hint</button>
+        {revealLevel >= 1 && <p style={s.riddleTranslation}>{riddle.riddle_translation}</p>}
+        {revealLevel >= 2
+          ? <p style={s.hint}>{riddle.hint}</p>
+          : <button style={s.hintBtn} onClick={() => setRevealLevel(r => r + 1)}>
+              {revealLevel === 0 ? '译 · translate' : '提示 · hint'}
+            </button>
         }
+        {currentAttempts.length > 0 && (
+          <div style={s.attemptHistory}>
+            {currentAttempts.map((attempt, i) => (
+              <div key={i} style={s.attemptRow}>
+                {attempt.colors.map((color, j) => (
+                  <div key={j} style={{
+                    ...s.attemptBlock,
+                    background: color === 'green' ? '#538d4e' : color === 'yellow' ? '#c9a800' : '#aaa49e',
+                  }} />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Grid */}
       <div style={s.gridWrap}>
         <div style={s.grid}>
-          {puzzle.grid.map((char, gi) => {
-            const group = puzzle.gridGroups[gi]
-            const isSolvedGroup = solvedGroups[group]
-            const isSelected = selected.includes(gi)
-            const canSelect = !isSolvedGroup && (isSelected || selected.length < 4)
+          {displaySlots.map((slot, idx) => {
+            if (slot.type === 'solved') {
+              return (
+                <div
+                  key={`s-${slot.group}-${slot.charPos}`}
+                  style={{
+                    ...s.charBtn,
+                    background: 'var(--ink)',
+                    color: 'var(--paper)',
+                    borderColor: 'var(--ink)',
+                    cursor: 'default',
+                    opacity: 0.7,
+                    animation: undefined,
+                  }}
+                >
+                  {slot.char}
+                </div>
+              )
+            }
 
-            return (
-              <button
-                key={gi}
-                style={{
-                  ...s.charBtn,
-                  ...(isSolvedGroup
-                    ? { background: 'var(--paper2)', color: '#d4cabb', borderColor: '#e8e4dc', cursor: 'default' }
+            const { gridIndex, char, group } = slot
+            const isSelected = selected.includes(gridIndex)
+            const isCorrectFlashing = flashCorrect && isSelected
+            const selectionIdx = isSelected ? selected.indexOf(gridIndex) : -1
+            const flashColor = lastWrongAttempt && selectionIdx >= 0 ? lastWrongAttempt.colors[selectionIdx] : null
+            const canSelect = !isInteractionDisabled && (isSelected || selected.length < 4)
+
+            const tileStyle = isCorrectFlashing
+              ? { background: '#538d4e', color: 'var(--paper)', borderColor: '#538d4e' }
+              : isSelected && flashColor === 'green'
+                ? { background: '#538d4e', color: 'white', borderColor: '#538d4e', transform: 'scale(0.95)' }
+                : isSelected && flashColor === 'yellow'
+                  ? { background: '#c9a800', color: 'white', borderColor: '#c9a800', transform: 'scale(0.95)' }
+                  : isSelected && flashColor === 'grey'
+                    ? { background: '#888', color: 'white', borderColor: '#888', transform: 'scale(0.95)' }
                     : isSelected
-                      ? { background: wrongFlash ? '#fdecea' : 'var(--ink)', color: wrongFlash ? '#c0392b' : 'var(--paper)', borderColor: wrongFlash ? '#c0392b' : 'var(--ink)', transform: 'scale(0.95)' }
+                      ? { background: 'var(--ink)', color: 'var(--paper)', borderColor: 'var(--ink)', transform: 'scale(0.95)' }
                       : canSelect
                         ? { background: 'white', borderColor: '#aab8c8', color: 'var(--ink)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer' }
                         : { background: 'var(--paper2)', borderColor: '#e0d9ce', color: '#c0b8ae', cursor: 'default' }
-                  ),
-                }}
-                onClick={() => toggleSelect(gi)}
-                disabled={isSolvedGroup || (!isSelected && selected.length >= 4)}
+
+            return (
+              <button
+                key={`u-${gridIndex}`}
+                className={isCorrectFlashing ? 'tile-correct' : undefined}
+                style={{ ...s.charBtn, ...tileStyle }}
+                onClick={() => !isInteractionDisabled && toggleSelect(gridIndex)}
+                disabled={isInteractionDisabled || (!isSelected && selected.length >= 4)}
               >
                 {char}
               </button>
@@ -122,14 +163,36 @@ export default function GameScreen({
           })}
         </div>
         <div style={s.actions}>
-          {selected.length > 0 && (
+          {selected.length > 0 && !isInteractionDisabled && (
             <button style={s.resetBtn} onClick={resetSelection}>重选 · Reset</button>
           )}
-          {selected.length === 4 && (
+          {selected.length === 4 && !isInteractionDisabled && (
             <button style={s.submitBtn} onClick={submitGroup}>提交 · Submit</button>
           )}
         </div>
       </div>
+
+      {/* Post-solve overlay */}
+      {solveOverlay !== null && (() => {
+        const cy = puzzle.chengyus[solveOverlay]
+        return (
+          <div style={s.overlayBg} onClick={dismissOverlay}>
+            <div style={s.overlayCard} onClick={e => e.stopPropagation()}>
+              <div style={s.overlayChars}>
+                {cy.chars.map((c, i) => (
+                  <div key={i} style={s.overlayChar}>{c}</div>
+                ))}
+              </div>
+              <div style={s.overlayPinyin}>{cy.pinyin}</div>
+              <p style={s.overlayMeaning}>{cy.meaning}</p>
+              {cy.derivation && (
+                <p style={s.overlayDerivation}>{cy.derivation}</p>
+              )}
+              <button style={s.overlayBtn} onClick={dismissOverlay}>继续 · Continue</button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -162,35 +225,6 @@ const s = {
   logoDate: { fontFamily: "'Noto Sans SC', sans-serif", fontSize: 9, color: '#c8bfaa', letterSpacing: 1, marginTop: 2 },
   hearts: { display: 'flex', gap: 4 },
   heart: { fontSize: 14, color: 'var(--red)' },
-  solvedSection: {
-    padding: '10px 20px',
-    background: 'var(--paper2)',
-    borderBottom: '1px solid #e0d9ce',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-  },
-  solvedRow: { display: 'flex', alignItems: 'center', gap: 6 },
-  solvedChar: {
-    width: 34,
-    height: 34,
-    background: 'var(--ink)',
-    color: 'var(--paper)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 6,
-    fontFamily: "'Noto Serif SC', serif",
-    fontSize: 17,
-    fontWeight: 700,
-  },
-  solvedPinyin: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: 11,
-    color: 'var(--grey)',
-    fontStyle: 'italic',
-    marginLeft: 4,
-  },
   progress: {
     padding: '12px 24px 8px',
     display: 'flex',
@@ -261,6 +295,23 @@ const s = {
     color: 'var(--grey)',
     cursor: 'pointer',
     fontFamily: "'Noto Sans SC', sans-serif",
+  },
+  attemptHistory: {
+    marginTop: 10,
+    borderTop: '1px solid #e8e4dc',
+    paddingTop: 8,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
+  attemptRow: {
+    display: 'flex',
+    gap: 4,
+  },
+  attemptBlock: {
+    width: 16,
+    height: 16,
+    borderRadius: 3,
   },
   gridWrap: { padding: '0 20px', flex: 1 },
   grid: {
@@ -339,5 +390,84 @@ const s = {
     letterSpacing: 1,
     cursor: 'pointer',
     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+  },
+  // Overlay styles
+  overlayBg: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(30, 24, 16, 0.7)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+    padding: 24,
+    animation: 'fadeIn 0.2s ease',
+  },
+  overlayCard: {
+    background: 'var(--paper)',
+    borderRadius: 20,
+    padding: '32px 24px 24px',
+    maxWidth: 340,
+    width: '100%',
+    textAlign: 'center',
+    boxShadow: '0 12px 48px rgba(0,0,0,0.3)',
+    animation: 'slideUp 0.25s ease',
+  },
+  overlayChars: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  overlayChar: {
+    width: 52,
+    height: 52,
+    background: 'var(--ink)',
+    color: 'var(--paper)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 24,
+    fontWeight: 700,
+  },
+  overlayPinyin: {
+    fontFamily: "'Playfair Display', serif",
+    fontSize: 13,
+    fontStyle: 'italic',
+    color: 'var(--grey)',
+    marginBottom: 8,
+  },
+  overlayMeaning: {
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 14,
+    color: 'var(--ink)',
+    lineHeight: 1.7,
+    marginBottom: 12,
+  },
+  overlayDerivation: {
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 11,
+    color: 'var(--grey)',
+    lineHeight: 1.7,
+    fontStyle: 'italic',
+    borderTop: '1px solid #e8e4dc',
+    paddingTop: 10,
+    marginBottom: 16,
+    textAlign: 'left',
+  },
+  overlayBtn: {
+    width: '100%',
+    padding: '12px 0',
+    background: 'var(--ink)',
+    color: 'var(--paper)',
+    border: 'none',
+    borderRadius: 10,
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 15,
+    fontWeight: 700,
+    letterSpacing: 1,
+    cursor: 'pointer',
   },
 }
