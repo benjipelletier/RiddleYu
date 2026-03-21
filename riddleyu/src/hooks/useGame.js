@@ -1,128 +1,91 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getPuzzleForDate, getTodayString } from '../puzzles'
-
-const MAX_LIVES = 5
 
 export function useGame() {
   const [puzzle, setPuzzle] = useState(null)
-  const [phase, setPhase] = useState('intro') // intro | connections | sliding | result
-  const [currentChengyu, setCurrentChengyu] = useState(0) // 0–3
-  const [selected, setSelected] = useState([]) // grid indices currently selected
-  const [solvedGroups, setSolvedGroups] = useState([false, false, false, false])
-  const [lives, setLives] = useState(MAX_LIVES)
-  const [attempts, setAttempts] = useState([]) // { group, chars, correct }
-  const [wrongFlash, setWrongFlash] = useState(false)
-  const [flashCorrect, setFlashCorrect] = useState(false)
-  const [solveOverlay, setSolveOverlay] = useState(null) // null | 0|1|2|3 (chengyu index)
-  const [offsets, setOffsets] = useState([0, 0, 0, 0]) // sliding phase: active char index per row
-  const [won, setWon] = useState(false)
+  const [loadError, setLoadError] = useState(false)
+  const [phase, setPhase] = useState('intro')
+  const [selected, setSelected] = useState(null)
+  const [opened, setOpened] = useState({})       // char → 'zai' | 'buzai'
+  const [claims, setClaims] = useState([])        // [{ char, claim, zai }]
+  const [declarations, setDeclarations] = useState([]) // [{ char, declared, correct }]
+  const [nextPosition, setNextPosition] = useState(1)  // pos 0 is given
+  const [wrongFlash, setWrongFlash] = useState(null)
 
-  useEffect(() => {
-    getPuzzleForDate(getTodayString()).then(setPuzzle)
-  }, [])
+  function loadPuzzle() {
+    setLoadError(false)
+    getPuzzleForDate(getTodayString())
+      .then(setPuzzle)
+      .catch(() => setLoadError(true))
+  }
+
+  useEffect(() => { loadPuzzle() }, [])
 
   function startGame() {
-    setPhase('connections')
+    if (!puzzle) return
+    // Auto-open position 0 — deliberately NOT added to declarations
+    // so it doesn't appear as a tile in the share result
+    const firstChar = puzzle.chengyu.chars[0]
+    const charData = puzzle.characters[firstChar]
+    setOpened({ [firstChar]: 'zai' })
+    setClaims([{ char: firstChar, claim: charData.claim, zai: true }])
+    setPhase('game')
   }
 
-  // --- CONNECTIONS PHASE ---
-
-  function toggleSelect(gridIndex) {
-    const group = puzzle.gridGroups[gridIndex]
-    if (solvedGroups[group]) return
-    if (selected.includes(gridIndex)) {
-      setSelected(selected.filter(i => i !== gridIndex))
-    } else if (selected.length < 4) {
-      setSelected([...selected, gridIndex])
-    }
+  function selectChar(char) {
+    if (opened[char] || wrongFlash) return
+    setSelected(prev => prev === char ? null : char)
   }
 
-  function submitGroup() {
-    if (selected.length !== 4) return
-    const selectedGroups = selected.map(i => puzzle.gridGroups[i])
-    const correct = selectedGroups.every(g => g === currentChengyu)
-    const selectedChars = selected.map(i => puzzle.grid[i])
-    const targetChars = puzzle.chengyus[currentChengyu].chars
-    const colors = selectedChars.map((ch, i) => {
-      if (ch === targetChars[i]) return 'green'
-      if (targetChars.includes(ch)) return 'yellow'
-      return 'grey'
-    })
-    setAttempts(prev => [...prev, { group: currentChengyu, chars: selectedChars, correct, colors }])
+  function declare(judgment) {
+    if (!selected || wrongFlash) return
+    const charData = puzzle.characters[selected]
+    const actualStatus = charData.zai ? 'zai' : 'buzai'
 
-    if (correct) {
-      setFlashCorrect(true)
-      setTimeout(() => {
-        setFlashCorrect(false)
-        const newSolved = [...solvedGroups]
-        newSolved[currentChengyu] = true
-        setSolvedGroups(newSolved)
-        setSelected([])
-        setSolveOverlay(currentChengyu) // show overlay AFTER grid updates
-      }, 700)
+    // Special: declaring 在 for a character that IS 在 but at wrong position
+    let isCorrect
+    if (judgment === 'zai' && charData.zai && charData.position !== nextPosition) {
+      isCorrect = false
     } else {
-      setWrongFlash(true)
-      setTimeout(() => {
-        setWrongFlash(false)
-        setSelected([])
-        const newLives = lives - 1
-        setLives(newLives)
-        if (newLives === 0) setPhase('result')
-      }, 600)
+      isCorrect = judgment === actualStatus
     }
-  }
 
-  function resetSelection() {
-    setSelected([])
-  }
+    const char = selected
+    setDeclarations(prev => [...prev, { char, declared: judgment, correct: isCorrect }])
 
-  function dismissOverlay() {
-    const solved = solveOverlay
-    setSolveOverlay(null)
-    if (solved === 3) {
-      setPhase('sliding')
+    if (isCorrect) {
+      setOpened(prev => ({ ...prev, [char]: judgment }))
+      setClaims(prev => [...prev, { char, claim: charData.claim, zai: charData.zai }])
+      setSelected(null)
+      if (judgment === 'zai') {
+        const newPos = nextPosition + 1
+        setNextPosition(newPos)
+        if (newPos > 3) {
+          // Win! All 4 found
+          setTimeout(() => setPhase('result'), 1500)
+        }
+      }
     } else {
-      setCurrentChengyu(solved + 1)
-    }
-  }
-
-  // --- SLIDING PHASE ---
-
-  function updateOffset(rowIndex, newOffset) {
-    const clamped = Math.max(0, Math.min(3, newOffset))
-    const next = [...offsets]
-    next[rowIndex] = clamped
-    setOffsets(next)
-
-    // Check win: each row's active char must match hidden.chars[rowIndex]
-    const allCorrect = puzzle.chengyus.every((cy, i) => {
-      return cy.chars[next[i]] === puzzle.hidden.chars[i]
-    })
-    if (allCorrect) {
-      setWon(true)
-      setTimeout(() => setPhase('result'), 1400)
+      setWrongFlash(char)
+      setSelected(null)
+      setTimeout(() => setWrongFlash(null), 600)
     }
   }
 
   return {
     puzzle,
+    loadError,
+    retryLoad: loadPuzzle,
     phase,
-    currentChengyu,
     selected,
-    solvedGroups,
-    lives,
-    maxLives: MAX_LIVES,
-    attempts,
+    opened,
+    claims,
+    declarations,
+    nextPosition,
     wrongFlash,
-    flashCorrect,
-    solveOverlay,
-    offsets,
-    won,
     startGame,
-    toggleSelect,
-    submitGroup,
-    resetSelection,
-    dismissOverlay,
-    updateOffset,
+    selectChar,
+    declareZai: () => declare('zai'),
+    declareBuzai: () => declare('buzai'),
   }
 }
