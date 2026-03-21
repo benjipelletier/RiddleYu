@@ -12,13 +12,14 @@ export default function CharacterGrid({
   return (
     <div style={s.grid}>
       {grid.map((char, idx) => {
-        const isSolvedNonAnswer = solvedChars.has(char) && !answerSet.has(char)
+        const isCurrentCluster = currentSet.has(char)
+        // During choosing, current cluster chars are NOT solved yet
+        const isSolvedNonAnswer = solvedChars.has(char) && !answerSet.has(char) && !(choosing && isCurrentCluster)
         const isAnswer = answerSet.has(char)
         const isSelected = selected.has(char)
         const isFlashing = wrongFlash && wrongFlash.has(char)
-        const isCurrentCluster = currentSet.has(char)
 
-        // During choosing, only current cluster chars are active
+        // During choosing, everything except current cluster and answers is dimmed
         const isDimmed = choosing && !isCurrentCluster && !isAnswer && !isSolvedNonAnswer
 
         const cardStyle = isAnswer
@@ -29,13 +30,11 @@ export default function CharacterGrid({
               ? s.cardSelected
               : isFlashing
                 ? s.cardFlash
-                : choosing && isCurrentCluster
-                  ? s.cardClusterActive
-                  : isDimmed
-                    ? s.cardDimmed
-                    : s.cardClosed
+                : isDimmed || (choosing && !isCurrentCluster)
+                  ? s.cardDimmed
+                  : s.cardClosed
 
-        const disabled = isAnswer || isSolvedNonAnswer || isDimmed
+        const disabled = isAnswer || isSolvedNonAnswer || (isDimmed && !isCurrentCluster)
 
         return (
           <button
@@ -52,7 +51,7 @@ export default function CharacterGrid({
             <span style={{
               ...s.charText,
               ...(isSolvedNonAnswer ? s.charMuted : {}),
-              ...(isDimmed ? s.charDimmed : {}),
+              ...((isDimmed || (choosing && !isCurrentCluster && !isAnswer)) ? s.charDimmed : {}),
             }}>{char}</span>
           </button>
         )
@@ -106,11 +105,6 @@ const s = {
   cardFlash: {
     background: '#fdecea',
     borderColor: 'var(--red)',
-  },
-  cardClusterActive: {
-    background: 'white',
-    borderColor: '#d4cabb',
-    borderWidth: 2,
   },
   cardDimmed: {
     background: 'var(--paper2)',
