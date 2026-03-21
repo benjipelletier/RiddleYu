@@ -1,86 +1,61 @@
-// Puzzle shape:
-// {
-//   date: "YYYY-MM-DD",
-//   chengyus: [
-//     { chars, pinyin, meaning, riddle, riddle_translation, hint },  // x4
-//   ],
-//   hidden: { chars, pinyin, meaning },   // the 5th chengyu formed by sliding
-//   hiddenPositions: [0,0,0,1],           // which index in each chengyu's chars contributes to hidden
-//   grid: [...16 chars shuffled],         // all 4 chengyus' chars mixed
-//   gridGroups: [...16 group indices],    // parallel to grid: which chengyu (0-3) each char belongs to
-// }
-
+// src/puzzles.js
 export const HARDCODED_PUZZLES = [
   {
-    date: "2026-03-19",
-    chengyus: [
-      {
-        chars: ["一", "石", "二", "鸟"],
-        pinyin: "yī shí èr niǎo",
-        meaning: "Kill two birds with one stone — one action, two results.",
-        riddle: "旅人投一石，双鸟齐落。一举，两获。",
-        riddle_translation: "A traveler throws one stone — two birds fall. One move, two gains.",
-        hint: "One action achieves two goals at once",
-        derivation: null, // no classical derivation in dataset
-      },
-      {
-        chars: ["马", "到", "成", "功"],
-        pinyin: "mǎ dào chéng gōng",
-        meaning: "Immediate success upon arrival — victory the moment you begin.",
-        riddle: "将旗未落，战马蹄声中城门已开。",
-        riddle_translation: "The battle flag still raised — city gates open to the sound of approaching hooves.",
-        hint: "Success arrives the moment you do — no delay, no struggle",
-        derivation: "元·无名氏《小尉迟》第二折：那老尉迟这一去，马到成功。",
-      },
-      {
-        chars: ["当", "仁", "不", "让"],
-        pinyin: "dāng rén bù ràng",
-        meaning: "When righteousness calls, yield to no one — step forward without hesitation.",
-        riddle: "皇帝问谁敢直言。一位大臣迈步向前，不让他人。",
-        riddle_translation: "The emperor asks who dares speak truth. One minister steps forward, yielding to no one.",
-        hint: "When duty calls, a person of integrity steps up without waiting",
-        derivation: "《论语·卫灵公》：子曰：'当仁，不让于师。'",
-      },
-      {
-        chars: ["争", "先", "恐", "后"],
-        pinyin: "zhēng xiān kǒng hòu",
-        meaning: "Everyone scrambles to be first, terrified of falling behind.",
-        riddle: "城门一开，百人蜂拥，人人唯恐落于人后。",
-        riddle_translation: "The gates open — a hundred people surge forward, each terrified of falling even one step behind.",
-        hint: "A frantic rush where everyone fears being last",
-        derivation: "清·张春帆《宦海》第十四回：一个个争先恐后的直抢上来。",
-      },
-    ],
-    hidden: {
-      chars: ["一", "马", "当", "先"],
-      pinyin: "yī mǎ dāng xiān",
-      meaning: "To charge ahead of all others — to take the lead without hesitation.",
+    date: "2026-03-21",
+    chengyu: {
+      chars: ["马", "到", "成", "功"],
+      pinyin: "mǎ dào chéng gōng",
+      meaning: "to achieve immediate success",
     },
-    // hiddenPositions[i] = index within chengyus[i].chars that contributes to hidden
-    // 一石二鸟[0]=一, 马到成功[0]=马, 当仁不让[0]=当, 争先恐后[1]=先
-    hiddenPositions: [0, 0, 0, 1],
-    grid: ["一","石","二","鸟","马","到","成","功","当","仁","不","让","争","先","恐","后"],
-    gridGroups: [0,0,0,0, 1,1,1,1, 2,2,2,2, 3,3,3,3],
+    story: "出自元代无名氏的杂剧。形容一到达就立刻取得成功，比喻事情顺利，一开始就取得好成绩。",
+    grid: ["马", "达", "赢", "终", "到", "走", "成", "果", "力", "功", "完", "骑", "路", "胜", "至", "进"],
+    characters: {
+      "马": { zai: true, position: 0, claim: "这个成语描述一个过程：先有行动，然后到达，接着完成，最后取得成果。" },
+      "到": { zai: true, position: 1, claim: "我表示具体的到达，到一个确切的地方。跟在我后面的字表示'变成'或'完成'，不是最终的结果本身。" },
+      "成": { zai: true, position: 2, claim: "我表示'变成'或'达成'——是转变的过程。我后面的字由两个部分组成，一个代表劳动，一个代表力量。" },
+      "功": { zai: true, position: 3, claim: "我由'工'和'力'组成——劳动加上力量等于成就。我不是胜利，我是靠努力获得的成果。" },
+      "达": { zai: false, claim: "第二个字可以表示'到达'也可以表示'达到'——两种理解都说得通。" },
+      "赢": { zai: false, claim: "最后一个字代表竞争中的胜出——比别人强才能赢。" },
+      "终": { zai: false, claim: "第三个字表示一件事走到了尽头——终于结束了。" },
+      "走": { zai: false, claim: "第一个字表示行走——用自己的脚一步步前进。" },
+      "果": { zai: false, claim: "最后一个字是事情自然产生的结果——像果实从树上长出来一样。" },
+      "力": { zai: false, claim: "第四个字单独表示力量——不需要和其他部分结合就能成为成果。" },
+      "完": { zai: false, claim: "第三个字标志着结束——过程已经完毕。" },
+      "骑": { zai: false, claim: "第一个字描述骑在动物身上的动作——人和动物一起移动。" },
+      "路": { zai: false, claim: "这个成语的第一个字描述的是一条道路——通往目的地的路径。" },
+      "胜": { zai: false, claim: "最后一个字表示赢——在竞争中胜出。" },
+      "至": { zai: false, claim: "第二个字表示到达，但也可以表示'最高'或'极致'——有多重含义。" },
+      "进": { zai: false, claim: "第二个字表示前进——强调的是移动的方向，而不是到达的结果。" },
+    },
   },
 ]
 
 export async function getPuzzleForDate(dateStr) {
   if (import.meta.env.DEV) {
     const puzzle = HARDCODED_PUZZLES.find(p => p.date === dateStr) || HARDCODED_PUZZLES[0]
-    // Shuffle grid and gridGroups together using Fisher-Yates
-    const indices = puzzle.grid.map((_, i) => i)
-    for (let i = indices.length - 1; i > 0; i--) {
+    // Shuffle grid order for dev (Fisher-Yates)
+    const shuffled = [...puzzle.grid]
+    for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [indices[i], indices[j]] = [indices[j], indices[i]]
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    return {
-      ...puzzle,
-      grid: indices.map(i => puzzle.grid[i]),
-      gridGroups: indices.map(i => puzzle.gridGroups[i]),
-    }
+    return { ...puzzle, grid: shuffled }
   }
-  const res = await fetch(`/api/puzzle?date=${dateStr}`)
-  return res.json()
+  // Try fetch, fall back to localStorage cache
+  try {
+    const res = await fetch(`/api/puzzle?date=${dateStr}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const puzzle = await res.json()
+    try { localStorage.setItem(`puzzle:${dateStr}`, JSON.stringify(puzzle)) } catch {}
+    return puzzle
+  } catch (e) {
+    // Offline / API error — try localStorage cache
+    try {
+      const cached = localStorage.getItem(`puzzle:${dateStr}`)
+      if (cached) return JSON.parse(cached)
+    } catch {}
+    throw e // No cache available — let caller handle
+  }
 }
 
 export function getTodayString() {
