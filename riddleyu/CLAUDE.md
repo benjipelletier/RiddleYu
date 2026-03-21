@@ -13,71 +13,39 @@ There are no tests. Deployment is to Vercel via GitHub push.
 
 ## What this is
 
-A daily 成语 (Chinese four-character idiom) puzzle game with two phases. The player solves 4 idiom riddles (Connections-style), then slides the rows to reveal a hidden 5th 成语. Built for people learning Chinese at a beginner to intermediate level.
+A daily 成语 (Chinese four-character idiom) puzzle game. The player deduces which 4 of 16 characters form today's 成语 by cross-referencing claims (true for correct characters, false for distractors). Built for people learning Chinese at a beginner to intermediate level.
 
-## Game phases
+## Game mechanic
 
-### Phase 1 — Connections (`connections`)
+- 16 characters in a 4×4 grid: 4 are 在 (in the idiom), 12 are 不在 (distractors)
+- Position 0 is pre-revealed with its claim
+- Player taps a character, declares 在 (in) or 不在 (not in)
+- Correct declarations reveal that character's claim
+- Wrong guesses: card stays closed, yellow tile in share result
+- Discovery enforced in position order (0→1→2→3)
+- No lives system — wrong guesses only affect share score
 
-1. A 4×4 grid of 16 Chinese characters is shown (all 4 solved 成语's characters shuffled together)
-2. One riddle at a time describes the **meaning/scene** of a whole 成语
-3. The player picks 4 characters from the grid they believe spell that 成语
-4. Submit: if all 4 belong to that 成语's group → correct, locked in; otherwise → lose a life
-5. Repeat for all 4 成语
-6. 5 lives shared across the whole connections phase
+## Key data concept: characters map
 
-### Phase 2 — Sliding (`sliding`)
-
-1. The 4 solved 成语 are shown as horizontal rows
-2. The player drags each row left/right to select which character is "active" for that row
-3. The 4 active characters (one per row, in row order) form the hidden 5th 成语
-4. Partial feedback: active character shown in yellow if correct for that row, green when all 4 match
-5. Win auto-detected when all 4 active chars match `hidden.chars`
-
-### Phase 3 — Result (`result`)
-
-Shows all 4 solved 成语 + the hidden 5th with meanings. Share button.
-
-## Key data concept: gridGroups
-
-Each of the 16 grid characters belongs to exactly one solved 成语 (0–3). `gridGroups[i]` is the group index for `grid[i]`. During connections phase, correctness is checked by group membership, not character values — this handles any potential duplicate characters across idioms.
-
-## Key data concept: hiddenPositions
-
-`hiddenPositions[i]` is the index (0–3) within `chengyus[i].chars` that contributes to the hidden 成语. Used in the sliding phase to know the target offset per row.
-
-Example for hidden 一马当先:
-- 一石二鸟 → 一 is at position 0 → hiddenPositions[0] = 0
-- 马到成功 → 马 is at position 0 → hiddenPositions[1] = 0
-- 当仁不让 → 当 is at position 0 → hiddenPositions[2] = 0
-- 争先恐后 → 先 is at position 1 → hiddenPositions[3] = 1
+`characters[char]` contains `{ zai: boolean, position?: number, claim: string }`. The `zai` field indicates if the character is in the idiom. Claims from 在 characters are TRUE; claims from 不在 characters are FALSE but plausible.
 
 ## Puzzle data shape
 
 ```json
 {
   "date": "YYYY-MM-DD",
-  "chengyus": [
-    {
-      "chars": ["字","字","字","字"],
-      "pinyin": "xxx xxx xxx xxx",
-      "meaning": "English meaning",
-      "riddle": "Chinese riddle describing the whole idiom's meaning/scene",
-      "riddle_translation": "English translation of the riddle",
-      "hint": "English hint shown when player taps hint button"
-    },
-    { ... },
-    { ... },
-    { ... }
-  ],
-  "hidden": {
+  "chengyu": {
     "chars": ["字","字","字","字"],
-    "pinyin": "xxx xxx xxx xxx",
+    "pinyin": "xxx",
     "meaning": "English meaning"
   },
-  "hiddenPositions": [0, 0, 0, 1],
-  "grid": ["字", ...16 chars total, shuffled],
-  "gridGroups": [0, ...16 group indices 0–3, same shuffle as grid]
+  "story": "Chinese story summary",
+  "grid": ["字", ...16 chars],
+  "characters": {
+    "字": { "zai": true, "position": 0, "claim": "Chinese claim" },
+    "字": { "zai": false, "claim": "Chinese claim" },
+    ...
+  }
 }
 ```
 
@@ -91,11 +59,11 @@ Example for hidden 一马当先:
 
 ## Current state
 
-- 1 hardcoded puzzle in `src/puzzles.js` for dev/testing (date: 2026-03-19)
+- 1 hardcoded puzzle in `src/puzzles.js` for dev (马到成功)
 - AI generation via Anthropic API is in `api/generate.js`
-- `getPuzzleForDate()` in dev uses hardcoded data; in production fetches from `/api/puzzle?date=YYYY-MM-DD`
+- `getPuzzleForDate()` uses hardcoded data in dev, fetches from `/api/puzzle?date=YYYY-MM-DD` in production
 - To manually trigger puzzle generation: `GET /api/generate?date=YYYY-MM-DD&force=true` with `Authorization: Bearer CRON_SECRET`
-- Old KV entries (pre-redesign, single-成语 format) will break the new frontend — flush them before going live
+- `force=true` regenerates claims/distractors for the SAME 成语 (for prompt tweaking)
 
 ## File structure
 
@@ -103,16 +71,17 @@ Example for hidden 一马当先:
 riddleyu/
 ├── src/
 │   ├── main.jsx              # Entry point
-│   ├── App.jsx               # Routes between intro/connections/sliding/result phases
-│   ├── index.css             # CSS variables, global reset
+│   ├── App.jsx               # Routes between intro/game/result phases
+│   ├── index.css             # CSS variables, global reset, animations
 │   ├── puzzles.js            # Hardcoded puzzle data + getPuzzleForDate()
 │   ├── hooks/
-│   │   └── useGame.js        # All game logic (state, selection, feedback, lives, sliding)
+│   │   └── useGame.js        # Game state: selected, opened, claims, declarations, win detection
 │   └── components/
 │       ├── IntroScreen.jsx   # How-to-play + start button
-│       ├── GameScreen.jsx    # Connections phase: riddle, 16-char grid, selection, submit
-│       ├── SlidingScreen.jsx # Sliding phase: draggable rows, forming preview, win detection
-│       └── ResultScreen.jsx  # End screen: all 5 成语 revealed, share button
+│       ├── GameScreen.jsx    # Claim bar + grid + action bar
+│       ├── ClaimBar.jsx      # Current claim display + swipeable history
+│       ├── CharacterGrid.jsx # 4×4 grid of character cards
+│       └── ResultScreen.jsx  # 成语 reveal + share button
 ├── api/
 │   ├── puzzle.js             # Vercel serverless: serve cached puzzle from KV
 │   └── generate.js           # Vercel serverless: generate puzzle via Claude + cache in KV
@@ -125,36 +94,13 @@ riddleyu/
 
 ## Design aesthetic
 
-Ink-on-paper feel. Warm cream tones (`#f5f0e8`). Noto Serif SC for Chinese characters. Playfair Display for English labels. Red seal stamp decoration. Clean, focused, no clutter. Feels handcrafted rather than digital. See `index.css` for CSS variables.
-
-All styles are inline JS objects defined in a `const s = { ... }` block at the bottom of each component file.
-
-## Riddle design
-
-Each solved 成语 has three progressive reveal fields:
-
-- **`riddle`**: Real classical Chinese derivation text from the bundled idiom dataset (`data/idiom.json`, source: pwxcoo/chinese-xinhua, CC0). E.g. `《论语·卫灵公》：子曰：'当仁，不让于师。'`
-- **`riddle_translation`**: AI-generated English translation of the classical text. Still indirect — translates the story, doesn't name the idiom.
-- **`hint`**: Direct English meaning of the idiom (gives it away — that's fine, it's a learning game).
-
-### Reveal flow (UI)
-
-```
-Level 0: riddle (classical Chinese) only + "译 · translate" button
-Level 1: + riddle_translation shown + "提示 · hint" button
-Level 2: + hint shown, no button
-```
-
-### If an idiom has no classical derivation
-
-If `derivation` is `"无"` in the dataset, the `riddle` field uses an AI-written vivid Chinese scene as a fallback (same style as the old riddles). Log a warning during generation.
+Ink-on-paper feel. Warm cream tones (#f5f0e8). Noto Serif SC for Chinese characters. Playfair Display for English labels. Red accent for selections. All styles as inline JS objects in `const s = { ... }` blocks. See `index.css` for CSS variables.
 
 ## Things to keep in mind
 
-- The 16 grid characters must all be distinct (no character appears in two different solved 成语)
-- The sliding constraint must hold: `chengyus[i].chars[hiddenPositions[i]] === hidden.chars[i]` for all i
-- `gridGroups` must be shuffled in the same permutation as `grid`
-- This is a learning game — riddles should feel poetic and educational, not punishing
-- Chinese characters should always use Noto Serif SC at generous size
-- The hint button exists so beginners aren't stuck — using it should feel fine, not penalised
-- `used_chengyu` in KV tracks all 5 成语 per day to prevent repeats across any slot
+- All 16 grid characters must be distinct
+- Claims from 在 characters are TRUE, from 不在 characters are FALSE
+- Position-order discovery: player must find positions 0→1→2→3 in order
+- This is a learning game — claims teach semantic distinctions between similar characters
+- Chinese characters should use Noto Serif SC at generous size
+- `used_chengyu` in KV tracks all used 成语 to prevent repeats
