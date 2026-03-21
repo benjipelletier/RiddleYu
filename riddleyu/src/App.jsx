@@ -3,7 +3,6 @@ import { Analytics } from '@vercel/analytics/react'
 import { useGame } from './hooks/useGame'
 import IntroScreen from './components/IntroScreen'
 import GameScreen from './components/GameScreen'
-import SlidingScreen from './components/SlidingScreen'
 import ResultScreen from './components/ResultScreen'
 
 export default function App() {
@@ -16,66 +15,62 @@ export default function App() {
         <div style={{
           minHeight: '100dvh',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           fontFamily: "'Noto Serif SC', serif",
           fontSize: 24,
           color: 'var(--grey)',
+          gap: 16,
         }}>
-          谜语...
+          {game.loadError ? (
+            <>
+              <span style={{ fontSize: 16 }}>今天的谜语还没准备好</span>
+              <button
+                onClick={game.retryLoad}
+                style={{
+                  fontFamily: "'Noto Serif SC', serif",
+                  fontSize: 14,
+                  padding: '10px 24px',
+                  borderRadius: 8,
+                  border: '1.5px solid #d4cabb',
+                  background: 'white',
+                  color: 'var(--ink)',
+                  cursor: 'pointer',
+                }}
+              >
+                重试
+              </button>
+            </>
+          ) : '谜语...'}
         </div>
       </>
     )
   }
 
-  if (game.phase === 'intro') return (
-    <><Analytics /><IntroScreen onStart={game.startGame} /></>
-  )
-
-  if (game.phase === 'connections') return (
-    <>
-      <Analytics />
-      <GameScreen
-        puzzle={game.puzzle}
-        currentChengyu={game.currentChengyu}
-        selected={game.selected}
-        solvedGroups={game.solvedGroups}
-        lives={game.lives}
-        maxLives={game.maxLives}
-        wrongFlash={game.wrongFlash}
-        attempts={game.attempts}
-        flashCorrect={game.flashCorrect}
-        solveOverlay={game.solveOverlay}
-        dismissOverlay={game.dismissOverlay}
-        toggleSelect={game.toggleSelect}
-        submitGroup={game.submitGroup}
-        resetSelection={game.resetSelection}
-      />
-    </>
-  )
-
-  if (game.phase === 'sliding') return (
-    <>
-      <Analytics />
-      <SlidingScreen
-        puzzle={game.puzzle}
-        offsets={game.offsets}
-        won={game.won}
-        updateOffset={game.updateOffset}
-      />
-    </>
-  )
-
   return (
     <>
       <Analytics />
-      <ResultScreen
-        puzzle={game.puzzle}
-        won={game.won}
-        attempts={game.attempts}
-        lives={game.lives}
-        maxLives={game.maxLives}
-      />
+      {game.phase === 'intro' && <IntroScreen onStart={game.startGame} />}
+      {game.phase === 'game' && (
+        <GameScreen
+          puzzle={game.puzzle}
+          selected={game.selected}
+          opened={game.opened}
+          claims={game.claims}
+          nextPosition={game.nextPosition}
+          wrongFlash={game.wrongFlash}
+          selectChar={game.selectChar}
+          declareZai={game.declareZai}
+          declareBuzai={game.declareBuzai}
+        />
+      )}
+      {game.phase === 'result' && (
+        <ResultScreen
+          puzzle={game.puzzle}
+          declarations={game.declarations}
+        />
+      )}
     </>
   )
 }
