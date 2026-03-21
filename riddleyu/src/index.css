@@ -60,3 +60,8 @@ body {
 .dot-pulse {
   animation: pulse 1.5s ease-in-out infinite;
 }
+
+.card-opened:hover {
+  box-shadow: 0 2px 12px rgba(192, 57, 43, 0.15);
+  border-color: var(--red) !important;
+}

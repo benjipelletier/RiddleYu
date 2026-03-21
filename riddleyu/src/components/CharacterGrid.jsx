@@ -21,7 +21,7 @@ export default function CharacterGrid({ grid, opened, selected, wrongFlash, onSe
         return (
           <button
             key={`${char}-${idx}`}
-            className={isFlashing ? 'shake' : undefined}
+            className={[isFlashing && 'shake', status && 'card-opened'].filter(Boolean).join(' ') || undefined}
             style={{ ...s.card, ...cardStyle }}
             onClick={() => onSelect(char)}
           >
@@ -70,12 +70,12 @@ const s = {
   cardZai: {
     background: '#e8f5e9',
     borderColor: '#2d7a4f',
-    cursor: 'default',
+    cursor: 'pointer',
   },
   cardBuzai: {
     background: 'var(--paper2)',
     borderColor: '#e0d9ce',
-    cursor: 'default',
+    cursor: 'pointer',
     opacity: 0.5,
   },
   cardFlash: {
