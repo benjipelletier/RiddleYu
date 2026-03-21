@@ -13,11 +13,23 @@ export function useGame() {
   const [declarations, setDeclarations] = useState([]) // { type, correct } for share
   const [wrongFlash, setWrongFlash] = useState(null) // Set of chars flashing
 
+  function shuffle(arr) {
+    const a = [...arr]
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+  }
+
   function loadPuzzle() {
     setLoadError(false)
     setPuzzle(null)
     getPuzzleForDate(getTodayString())
-      .then(setPuzzle)
+      .then(p => setPuzzle({
+        ...p,
+        clusters: p.clusters.map(c => ({ ...c, chars: shuffle(c.chars) })),
+      }))
       .catch(() => setLoadError(true))
   }
 
