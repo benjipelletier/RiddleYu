@@ -37,21 +37,36 @@ export async function generateContentMap(text: string): Promise<ContentMap> {
     model: MODEL,
     max_tokens: 4096,
     system: PASS1_SYSTEM,
-    messages: [{ role: 'user', content: text }],
+    messages: [
+      { role: 'user', content: text },
+      { role: 'assistant', content: '{' },
+    ],
   });
 
   const content = response.content[0];
   if (content.type !== 'text') throw new Error('Unexpected response type');
 
-  return JSON.parse(stripCodeFences(content.text)) as ContentMap;
+  return parseJSON<ContentMap>('{' + content.text);
 }
 
-function stripCodeFences(text: string): string {
-  let s = text.trim();
+function parseJSON<T>(raw: string): T {
+  let s = raw.trim();
+  // Strip code fences
   if (s.startsWith('```')) {
     s = s.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
+    s = s.trim();
   }
-  return s.trim();
+  // Extract the outermost JSON object
+  const start = s.indexOf('{');
+  if (start === -1) throw new Error('No JSON object found in response');
+  let depth = 0;
+  let end = -1;
+  for (let i = start; i < s.length; i++) {
+    if (s[i] === '{') depth++;
+    else if (s[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  if (end === -1) throw new Error('Unterminated JSON object in response');
+  return JSON.parse(s.slice(start, end + 1)) as T;
 }
 
 // ─── Pass 2: Line Annotation ─────────────────────────────────────────────────
@@ -138,11 +153,14 @@ ${surroundingLines}`;
     model: MODEL,
     max_tokens: 4096,
     system: PASS2_SYSTEM,
-    messages: [{ role: 'user', content: userMessage }],
+    messages: [
+      { role: 'user', content: userMessage },
+      { role: 'assistant', content: '{' },
+    ],
   });
 
   const content = response.content[0];
   if (content.type !== 'text') throw new Error('Unexpected response type');
 
-  return JSON.parse(stripCodeFences(content.text)) as LineAnnotation;
+  return parseJSON<LineAnnotation>('{' + content.text);
 }
