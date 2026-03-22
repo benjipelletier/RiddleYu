@@ -1,30 +1,19 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "@/styles/globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
+import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: "zhujie — 注解",
-  description: "Chinese content annotation engine",
+  title: '注解 Zhùjiě',
+  description: 'Pre-study every line before you press play',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>{children}</body>
+    <html lang="zh">
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
