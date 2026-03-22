@@ -34,9 +34,19 @@ export default function ContentWorkspace() {
     const stored = sessionStorage.getItem(`content:${hash}`);
     if (stored) {
       setContentData(JSON.parse(stored));
-    } else {
-      router.push('/');
+      return;
     }
+    // Fallback: fetch from DB (supports refresh, bookmarks, direct links)
+    fetch(`/api/content-map?hash=${hash}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then((data) => {
+        sessionStorage.setItem(`content:${hash}`, JSON.stringify(data));
+        setContentData(data);
+      })
+      .catch(() => router.push('/'));
   }, [hash, router]);
 
   const handleLineClick = useCallback(
