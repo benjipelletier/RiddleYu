@@ -139,7 +139,6 @@ export default function ContentWorkspace() {
           <div style={{ padding: 16, height: '100%', overflowY: 'auto' }}>
             <LineList
               lines={contentData.lines}
-              contentMap={contentData.contentMap}
               activeLineIndex={activeLineIndex}
               annotatedLines={annotatedLines}
               onLineClick={handleLineClick}
@@ -154,7 +153,6 @@ export default function ContentWorkspace() {
     <div style={{ display: 'flex', height: '100vh', background: colors.bg }}>
       <LineList
         lines={contentData.lines}
-        contentMap={contentData.contentMap}
         activeLineIndex={activeLineIndex}
         annotatedLines={annotatedLines}
         onLineClick={handleLineClick}
