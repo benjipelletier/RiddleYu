@@ -1,7 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ContentMap, LineAnnotation } from './types';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+let _client: Anthropic | null = null;
+function getClient() {
+  if (!_client) {
+    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+  }
+  return _client;
+}
 const MODEL = 'claude-opus-4-6';
 
 // ─── Pass 1: Content Map ─────────────────────────────────────────────────────
@@ -27,7 +33,7 @@ Be specific and grounded. Every observation must reference specific lines or wor
 Return ONLY valid JSON. No markdown, no explanation.`;
 
 export async function generateContentMap(text: string): Promise<ContentMap> {
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: MODEL,
     max_tokens: 4096,
     system: PASS1_SYSTEM,
@@ -37,7 +43,15 @@ export async function generateContentMap(text: string): Promise<ContentMap> {
   const content = response.content[0];
   if (content.type !== 'text') throw new Error('Unexpected response type');
 
-  return JSON.parse(content.text) as ContentMap;
+  return JSON.parse(stripCodeFences(content.text)) as ContentMap;
+}
+
+function stripCodeFences(text: string): string {
+  let s = text.trim();
+  if (s.startsWith('```')) {
+    s = s.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
+  }
+  return s.trim();
 }
 
 // ─── Pass 2: Line Annotation ─────────────────────────────────────────────────
@@ -120,7 +134,7 @@ Line ${lineIndex}: ${lines[lineIndex]}
 ## Surrounding Lines (±3)
 ${surroundingLines}`;
 
-  const response = await client.messages.create({
+  const response = await getClient().messages.create({
     model: MODEL,
     max_tokens: 4096,
     system: PASS2_SYSTEM,
@@ -130,5 +144,5 @@ ${surroundingLines}`;
   const content = response.content[0];
   if (content.type !== 'text') throw new Error('Unexpected response type');
 
-  return JSON.parse(content.text) as LineAnnotation;
+  return JSON.parse(stripCodeFences(content.text)) as LineAnnotation;
 }

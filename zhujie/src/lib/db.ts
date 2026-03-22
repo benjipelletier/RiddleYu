@@ -1,7 +1,13 @@
 import { neon } from '@neondatabase/serverless';
 import type { ContentMap, ContentMetadata, LineAnnotation, ContentRow } from './types';
 
-const sql = neon(process.env.DATABASE_URL!);
+let _sql: ReturnType<typeof neon> | null = null;
+function getSql() {
+  if (!_sql) {
+    _sql = neon(process.env.DATABASE_URL!);
+  }
+  return _sql;
+}
 
 // ─── Schema Setup ────────────────────────────────────────────────────────────
 
@@ -9,6 +15,7 @@ let tablesEnsured = false;
 
 export async function ensureTables() {
   if (tablesEnsured) return;
+  const sql = getSql();
   await sql`
     CREATE TABLE IF NOT EXISTS contents (
       content_hash TEXT PRIMARY KEY,
@@ -37,6 +44,7 @@ export async function ensureTables() {
 // ─── Content Map ─────────────────────────────────────────────────────────────
 
 export async function getContent(contentHash: string): Promise<ContentRow | null> {
+  const sql = getSql();
   const rows = await sql`
     SELECT * FROM contents WHERE content_hash = ${contentHash}
   `;
@@ -49,6 +57,7 @@ export async function storeContent(
   contentMap: ContentMap,
   metadata: ContentMetadata,
 ): Promise<void> {
+  const sql = getSql();
   await sql`
     INSERT INTO contents (content_hash, source_text, content_map, title, artist, content_type, language_variant)
     VALUES (
@@ -70,6 +79,7 @@ export async function getLineAnnotation(
   contentHash: string,
   lineIndex: number,
 ): Promise<LineAnnotation | null> {
+  const sql = getSql();
   const rows = await sql`
     SELECT annotation FROM line_annotations
     WHERE content_hash = ${contentHash} AND line_index = ${lineIndex}
@@ -82,6 +92,7 @@ export async function storeLineAnnotation(
   lineIndex: number,
   annotation: LineAnnotation,
 ): Promise<void> {
+  const sql = getSql();
   await sql`
     INSERT INTO line_annotations (content_hash, line_index, annotation)
     VALUES (${contentHash}, ${lineIndex}, ${JSON.stringify(annotation)})
