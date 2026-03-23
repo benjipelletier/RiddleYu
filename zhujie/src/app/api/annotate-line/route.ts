@@ -1,6 +1,6 @@
+// DEPRECATED: Use /api/decompose-line instead. Kept for backward compatibility with cached annotations.
 import { NextRequest, NextResponse } from 'next/server';
-import { getContent, getLineAnnotation, storeLineAnnotation, ensureTables } from '@/lib/db';
-import { generateLineAnnotationLegacy as generateLineAnnotation } from '@/lib/annotate';
+import { getLineAnnotation, ensureTables } from '@/lib/db';
 import type { AnnotateLineRequest } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -20,26 +20,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(cached);
     }
 
-    const content = await getContent(body.contentHash);
-    if (!content) {
-      return NextResponse.json({ error: 'Content not found' }, { status: 404 });
-    }
-
-    const lines = content.source_text.split('\n');
-    if (body.lineIndex < 0 || body.lineIndex >= lines.length) {
-      return NextResponse.json({ error: 'Line index out of range' }, { status: 400 });
-    }
-
-    const annotation = await generateLineAnnotation(
-      content.content_map,
-      content.source_text,
-      lines,
-      body.lineIndex,
-    );
-
-    await storeLineAnnotation(body.contentHash, body.lineIndex, annotation);
-
-    return NextResponse.json(annotation);
+    // No longer generates new annotations — use /api/decompose-line instead
+    return NextResponse.json({ error: 'Use /api/decompose-line for new annotations' }, { status: 410 });
   } catch (error) {
     console.error('Annotate line error:', error);
     return NextResponse.json(

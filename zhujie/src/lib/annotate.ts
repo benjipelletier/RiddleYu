@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { ContentMap, LineAnnotation } from './types';
+import type { ContentMap } from './types';
 import type { LineDecomposition } from './yukuai-types';
 
 let _client: Anthropic | null = null;
@@ -67,100 +67,7 @@ function parseJSON<T>(raw: string): T {
   return JSON.parse(s.slice(start, end + 1)) as T;
 }
 
-// ─── Pass 2: Line Annotation ─────────────────────────────────────────────────
-
-const PASS2_SYSTEM = `You are annotating a single line of Chinese content for an intermediate-to-advanced learner (HSK 4-6 level). Your goal is to maximize comprehension of this specific line in context.
-
-You have access to:
-- The full content map (themes, motifs, patterns)
-- The complete original text
-- The target line and its surrounding lines
-
-Produce annotations following this JSON schema:
-{
-  "line_index": number,
-  "chinese": "the line text",
-  "translation": "contextual English translation",
-  "insight": "ONE concise non-obvious observation",
-  "words": [
-    {
-      "chars": "word",
-      "pinyin": "only if pronunciation is a gotcha",
-      "has_pinyin_gotcha": boolean,
-      "note": "contextual meaning woven with cultural insight",
-      "is_pattern_key": boolean,
-      "difficulty": "hsk1-6 or hsk5+"
-    }
-  ],
-  "grammar_unlock": null | {
-    "pattern": "pattern template",
-    "explanation": "what it does",
-    "examples": ["example1", "example2", "example3"]
-  },
-  "cross_references": [
-    { "target_line": number, "note": "specific connection explanation" }
-  ],
-  "dropped_subject": null | "explanation of implied subject",
-  "negation_note": null | "explanation of negation pattern"
-}
-
-Rules:
-- CONTEXTUAL MEANINGS ONLY. Never give dictionary defaults. What does this word mean in THIS sentence?
-- WEAVE cultural insight into vocabulary notes. Don't separate "culture" from "meaning."
-- PINYIN only when pronunciation is a gotcha: 多音字, unexpected tones, commonly mispronounced. Set has_pinyin_gotcha: true for these. Otherwise omit pinyin and set has_pinyin_gotcha: false.
-- INSIGHT must be ONE concise observation — the single most important non-obvious thing about this line. Not a summary. An insight.
-- GRAMMAR UNLOCK only when a pattern is the actual comprehension bottleneck. If grammar is straightforward, set to null.
-- CROSS-REFERENCES must be specific. "This connects to line X" is useless. "This line's V來V去 mirrors line 2's, but swimming became running — the exhaustion escalates" is useful.
-- SKIP boring words. 我, 你, 的, 在 — don't annotate unless doing something unusual.
-- For particles (了, 呢, 吧, etc.), explain what the particle is DOING in this specific sentence.
-- Flag dropped subjects explicitly.
-- Note register only when the word choice is surprising or meaningful.
-
-Return ONLY valid JSON. No markdown, no explanation.`;
-
-export async function generateLineAnnotationLegacy(
-  contentMap: ContentMap,
-  fullText: string,
-  lines: string[],
-  lineIndex: number,
-): Promise<LineAnnotation> {
-  const start = Math.max(0, lineIndex - 3);
-  const end = Math.min(lines.length - 1, lineIndex + 3);
-  const surroundingLines = lines
-    .slice(start, end + 1)
-    .map((line, i) => {
-      const idx = start + i;
-      const marker = idx === lineIndex ? ' <<<' : '';
-      return `${idx}: ${line}${marker}`;
-    })
-    .join('\n');
-
-  const userMessage = `## Content Map
-${JSON.stringify(contentMap, null, 2)}
-
-## Full Text
-${fullText}
-
-## Target Line
-Line ${lineIndex}: ${lines[lineIndex]}
-
-## Surrounding Lines (±3)
-${surroundingLines}`;
-
-  const response = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    system: PASS2_SYSTEM,
-    messages: [{ role: 'user', content: userMessage }],
-  });
-
-  const content = response.content[0];
-  if (content.type !== 'text') throw new Error('Unexpected response type');
-
-  return parseJSON<LineAnnotation>(content.text);
-}
-
-// ─── Pass 2 Redesign: YuKuai Decomposition ───────────────────────────────────
+// ─── Pass 2: YuKuai Decomposition ────────────────────────────────────────────
 
 const DECOMPOSE_SYSTEM = `You are decomposing a single line of Chinese content into atomic learning units (YuKuai) for a language learner.
 

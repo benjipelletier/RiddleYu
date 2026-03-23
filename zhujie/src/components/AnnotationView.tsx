@@ -21,11 +21,6 @@ interface AnnotationViewProps {
   onRecallResult: (yukuaiId: string, result: 'success' | 'fail') => void;
 }
 
-const typeColors: Record<YuKuaiType, string> = {
-  vocab: colors.vocab,
-  grammar: colors.grammar,
-  expression: colors.culture,
-};
 
 export default function AnnotationView({
   lineIndex,
