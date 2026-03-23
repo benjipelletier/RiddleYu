@@ -25,3 +25,6 @@ next-env.d.ts
 
 # superpowers
 .superpowers/
+
+# generated data
+src/data/cedict.json
