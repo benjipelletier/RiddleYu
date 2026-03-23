@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getContent, getLineAnnotation, storeLineAnnotation, ensureTables } from '@/lib/db';
-import { generateLineAnnotation } from '@/lib/annotate';
+import { generateLineAnnotationLegacy as generateLineAnnotation } from '@/lib/annotate';
 import type { AnnotateLineRequest } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
