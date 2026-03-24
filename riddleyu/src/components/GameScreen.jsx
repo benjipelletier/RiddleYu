@@ -4,7 +4,7 @@ import CharacterGrid from './CharacterGrid'
 
 export default function GameScreen({
   puzzle, selected, solvedClusters, answers, currentCluster, subPhase,
-  wrongFlash, lessonShown, selectChar, submitCluster,
+  wrongFlash, selectChar, submitCluster,
 }) {
   const cluster = puzzle.clusters[currentCluster]
   const solvedChars = new Set(solvedClusters.flatMap(i => puzzle.clusters[i].chars))
@@ -33,7 +33,6 @@ export default function GameScreen({
         label={barLabel}
         text={barText}
         subPhase={subPhase}
-        lessonShown={lessonShown}
       />
 
       {/* Progress dots */}

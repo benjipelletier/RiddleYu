@@ -12,7 +12,6 @@ export function useGame() {
   const [answers, setAnswers] = useState([]) // answer chars found
   const [declarations, setDeclarations] = useState([]) // { type, correct } for share
   const [wrongFlash, setWrongFlash] = useState(null) // Set of chars flashing
-  const [lessonShown, setLessonShown] = useState(false) // show lesson after first pick attempt
 
   function shuffle(arr) {
     const a = [...arr]
@@ -46,7 +45,6 @@ export function useGame() {
     setAnswers([])
     setDeclarations([])
     setWrongFlash(null)
-    setLessonShown(false)
     loadPuzzle()
   }
 
@@ -55,7 +53,6 @@ export function useGame() {
     setPhase('game')
     setCurrentCluster(0)
     setSubPhase('picking')
-    setLessonShown(false)
   }
 
   function toggleSelect(char) {
@@ -86,7 +83,6 @@ export function useGame() {
       setSolvedClusters(prev => [...prev, currentCluster])
       setSelected(new Set())
       setSubPhase('choosing')
-      setLessonShown(false)
     } else {
       setDeclarations(prev => [...prev, { type: 'cluster', correct: false }])
       setWrongFlash(new Set(selected))
@@ -97,21 +93,10 @@ export function useGame() {
     }
   }
 
-  function skipPicking() {
-    if (subPhase !== 'picking' || wrongFlash) return
-    setDeclarations(prev => [...prev, { type: 'cluster', correct: false }])
-    setSolvedClusters(prev => [...prev, currentCluster])
-    setSelected(new Set())
-    setSubPhase('choosing')
-    setLessonShown(false)
-  }
-
   function chooseAnswer(char) {
     if (subPhase !== 'choosing' || wrongFlash) return
     const cluster = puzzle.clusters[currentCluster]
     if (!cluster.chars.includes(char)) return
-
-    setLessonShown(true)
 
     if (char === cluster.answer) {
       setDeclarations(prev => [...prev, { type: 'specific', correct: true }])
@@ -123,7 +108,6 @@ export function useGame() {
       } else {
         setCurrentCluster(nextCluster)
         setSubPhase('picking')
-        setLessonShown(false)
       }
     } else {
       setDeclarations(prev => [...prev, { type: 'specific', correct: false }])
@@ -152,11 +136,9 @@ export function useGame() {
     answers,
     declarations,
     wrongFlash,
-    lessonShown,
     startGame,
     selectChar,
     submitCluster,
-    skipPicking,
     reloadPuzzle,
   }
 }

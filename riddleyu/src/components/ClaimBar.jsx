@@ -19,21 +19,10 @@ function TargetIcon() {
   )
 }
 
-export default function ClaimBar({ text, label, subPhase, lessonShown }) {
+export default function ClaimBar({ text, label, subPhase }) {
   if (!text) return null
 
   const isPicking = subPhase === 'picking'
-
-  // In choosing mode, hide lesson until user makes first pick attempt
-  const displayText = isPicking
-    ? text
-    : lessonShown
-      ? text
-      : null
-
-  const promptText = !isPicking && !lessonShown
-    ? '先凭感觉选，选完再看解释。'
-    : null
 
   return (
     <div
@@ -52,14 +41,7 @@ export default function ClaimBar({ text, label, subPhase, lessonShown }) {
         <p style={s.instruction}>找出四个相关的字，选完后提交。</p>
       )}
 
-      {displayText && (
-        <p style={{ ...s.text, ...(isPicking ? {} : s.textChoosing) }}>{displayText}</p>
-      )}
-
-      {promptText && (
-        <p style={s.promptText}>{promptText}</p>
-      )}
-
+      <p style={{ ...s.text, ...(isPicking ? {} : s.textChoosing) }}>{text}</p>
     </div>
   )
 }
