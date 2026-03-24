@@ -19,7 +19,7 @@ function TargetIcon() {
   )
 }
 
-export default function ClaimBar({ text, label, subPhase, clusterChars }) {
+export default function ClaimBar({ text, label, subPhase }) {
   if (!text) return null
 
   const isPicking = subPhase === 'picking'
@@ -36,14 +36,12 @@ export default function ClaimBar({ text, label, subPhase, clusterChars }) {
         </span>
         {label && <div style={{ ...s.label, ...(isPicking ? {} : s.labelChoosing) }}>{label}</div>}
       </div>
-      <p style={{ ...s.text, ...(isPicking ? {} : s.textChoosing) }}>{text}</p>
-      {!isPicking && clusterChars && (
-        <div style={s.charRow}>
-          {clusterChars.map((c, i) => (
-            <span key={i} style={s.miniChar}>{c}</span>
-          ))}
-        </div>
+
+      {isPicking && (
+        <p style={s.instruction}>找出四个相关的字，选完后提交。</p>
       )}
+
+      <p style={{ ...s.text, ...(isPicking ? {} : s.textChoosing) }}>{text}</p>
     </div>
   )
 }
@@ -62,15 +60,15 @@ const s = {
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
   },
   rootChoosing: {
-    background: '#fff8f0',
-    borderColor: 'var(--red)',
-    boxShadow: '0 2px 12px rgba(192, 57, 43, 0.1)',
+    background: '#f0f4f8',
+    borderColor: '#1a3a5c',
+    boxShadow: '0 2px 12px rgba(26, 58, 92, 0.1)',
   },
   labelRow: {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   icon: {
     display: 'flex',
@@ -80,7 +78,7 @@ const s = {
     color: 'var(--grey)',
   },
   iconChoosing: {
-    color: 'var(--red)',
+    color: '#1a3a5c',
   },
   label: {
     fontSize: 10,
@@ -90,7 +88,14 @@ const s = {
     textTransform: 'uppercase',
   },
   labelChoosing: {
-    color: 'var(--red)',
+    color: '#1a3a5c',
+  },
+  instruction: {
+    fontFamily: "'Noto Sans SC', sans-serif",
+    fontSize: 11,
+    color: '#a09880',
+    marginBottom: 6,
+    lineHeight: 1.5,
   },
   text: {
     fontFamily: "'Noto Serif SC', serif",
@@ -99,26 +104,13 @@ const s = {
     color: 'var(--ink)',
   },
   textChoosing: {
-    color: '#5a2a1a',
+    color: '#1a2a3c',
   },
-  charRow: {
-    display: 'flex',
-    gap: 6,
-    marginTop: 10,
-    justifyContent: 'center',
-  },
-  miniChar: {
-    width: 32,
-    height: 32,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 6,
-    border: '1.5px solid #d4cabb',
-    background: 'white',
+  promptText: {
     fontFamily: "'Noto Serif SC', serif",
-    fontSize: 16,
-    fontWeight: 700,
-    color: 'var(--ink)',
+    fontSize: 14,
+    color: '#4a6a8a',
+    fontStyle: 'italic',
+    lineHeight: 1.7,
   },
 }

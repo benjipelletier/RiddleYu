@@ -12,7 +12,7 @@ export default function GameScreen({
   // Hint/lesson text
   const barLabel = subPhase === 'picking'
     ? `第${['一','二','三','四'][currentCluster]}组`
-    : '选一个'
+    : '哪个在成语里？'
   const barText = subPhase === 'picking' ? cluster.hint : cluster.lesson
 
   const canSubmit = subPhase === 'picking' && selected.size === 4 && !wrongFlash
@@ -33,7 +33,6 @@ export default function GameScreen({
         label={barLabel}
         text={barText}
         subPhase={subPhase}
-        clusterChars={cluster.chars}
       />
 
       {/* Progress dots */}
@@ -76,7 +75,7 @@ export default function GameScreen({
             提交 ({selected.size}/4)
           </button>
         ) : (
-          <div style={s.chooseHint}>点击你认为在成语中的字</div>
+          <div style={s.chooseHint}>点击上方你认为属于成语的字</div>
         )}
       </div>
     </div>
