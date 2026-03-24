@@ -19,7 +19,7 @@ function TargetIcon() {
   )
 }
 
-export default function ClaimBar({ text, label, subPhase, clusterChars, lessonShown }) {
+export default function ClaimBar({ text, label, subPhase, lessonShown }) {
   if (!text) return null
 
   const isPicking = subPhase === 'picking'
@@ -60,13 +60,6 @@ export default function ClaimBar({ text, label, subPhase, clusterChars, lessonSh
         <p style={s.promptText}>{promptText}</p>
       )}
 
-      {!isPicking && clusterChars && (
-        <div style={s.charRow}>
-          {clusterChars.map((c, i) => (
-            <span key={i} style={s.miniChar}>{c}</span>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -137,26 +130,5 @@ const s = {
     color: '#4a6a8a',
     fontStyle: 'italic',
     lineHeight: 1.7,
-  },
-  charRow: {
-    display: 'flex',
-    gap: 8,
-    marginTop: 12,
-    justifyContent: 'center',
-  },
-  miniChar: {
-    width: 38,
-    height: 38,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    border: '1.5px solid #c8bfaa',
-    background: 'white',
-    fontFamily: "'Noto Serif SC', serif",
-    fontSize: 18,
-    fontWeight: 700,
-    color: 'var(--ink)',
-    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
   },
 }

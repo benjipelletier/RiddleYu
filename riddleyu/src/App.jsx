@@ -89,7 +89,6 @@ export default function App() {
           lessonShown={game.lessonShown}
           selectChar={game.selectChar}
           submitCluster={game.submitCluster}
-          skipPicking={game.skipPicking}
         />
       )}
       {game.phase === 'result' && (

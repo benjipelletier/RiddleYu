@@ -4,7 +4,7 @@ import CharacterGrid from './CharacterGrid'
 
 export default function GameScreen({
   puzzle, selected, solvedClusters, answers, currentCluster, subPhase,
-  wrongFlash, lessonShown, selectChar, submitCluster, skipPicking,
+  wrongFlash, lessonShown, selectChar, submitCluster,
 }) {
   const cluster = puzzle.clusters[currentCluster]
   const solvedChars = new Set(solvedClusters.flatMap(i => puzzle.clusters[i].chars))
@@ -33,7 +33,6 @@ export default function GameScreen({
         label={barLabel}
         text={barText}
         subPhase={subPhase}
-        clusterChars={cluster.chars}
         lessonShown={lessonShown}
       />
 
@@ -69,18 +68,13 @@ export default function GameScreen({
       {/* Action bar */}
       <div style={s.actionBar}>
         {subPhase === 'picking' ? (
-          <div style={s.pickingActions}>
-            <button
-              style={{ ...s.btn, ...s.btnSubmit, ...(canSubmit ? {} : s.btnDisabled) }}
-              onClick={submitCluster}
-              disabled={!canSubmit}
-            >
-              提交 ({selected.size}/4)
-            </button>
-            <button style={s.btnSkip} onClick={skipPicking}>
-              已知道，跳过 →
-            </button>
-          </div>
+          <button
+            style={{ ...s.btn, ...s.btnSubmit, ...(canSubmit ? {} : s.btnDisabled) }}
+            onClick={submitCluster}
+            disabled={!canSubmit}
+          >
+            提交 ({selected.size}/4)
+          </button>
         ) : (
           <div style={s.chooseHint}>点击上方你认为属于成语的字</div>
         )}
@@ -133,19 +127,9 @@ const s = {
     padding: '16px 20px 28px',
     marginTop: 'auto',
     justifyContent: 'center',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  pickingActions: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 10,
   },
   btn: {
     flex: 1,
-    width: '100%',
     padding: '14px 0',
     borderRadius: 10,
     fontSize: 16,
@@ -164,18 +148,6 @@ const s = {
   btnDisabled: {
     opacity: 0.3,
     cursor: 'default',
-  },
-  btnSkip: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontFamily: "'Noto Sans SC', sans-serif",
-    fontSize: 12,
-    color: '#a09880',
-    padding: '4px 0',
-    textDecoration: 'underline',
-    textDecorationColor: '#c8bfaa',
-    textUnderlineOffset: 3,
   },
   chooseHint: {
     fontFamily: "'Noto Serif SC', serif",
