@@ -1,6 +1,5 @@
 {
   "crons": [
-    { "path": "/api/riddleyu/generate", "schedule": "0 5 * * *" },
-    { "path": "/api/gumai/generate", "schedule": "0 6 * * *" }
+    { "path": "/api/riddleyu/generate", "schedule": "0 5 * * *" }
   ]
 }
