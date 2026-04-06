@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { projects } from './projects.config';
 
-const disabledPrefixes = projects
-  .filter((p) => !p.enabled)
-  .flatMap((p) => [`/${p.name}/`, `/${p.name}`, `/api/${p.name}/`, `/api/${p.name}`]);
+// Disabled projects — keep in sync with projects.config.ts
+const DISABLED = ['gumai', 'tongyizuo', 'zhujie', 'jazz', 'engine'];
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const isDisabled = disabledPrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(prefix + (prefix.endsWith('/') ? '' : '/'))
-  );
-  if (isDisabled) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  const path = request.nextUrl.pathname;
+  for (const name of DISABLED) {
+    if (path === `/${name}` || path.startsWith(`/${name}/`) ||
+        path === `/api/${name}` || path.startsWith(`/api/${name}/`)) {
+      return new NextResponse('Not Found', { status: 404 });
+    }
   }
   return NextResponse.next();
 }
