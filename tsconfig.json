@@ -62,7 +62,6 @@
     "gecijielong/src/**/*.js",
     "gecijielong/src/**/*.jsx",
     "projects.config.ts",
-    "middleware.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
@@ -70,6 +69,10 @@
     "node_modules",
     "**/node_modules",
     "**/dist",
-    "**/.next"
+    "**/.next",
+    "engine/",
+    "zhujie/",
+    "gumai/",
+    "tongyizuo/"
   ]
 }
