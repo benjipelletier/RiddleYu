@@ -1,4 +1,4 @@
-import cedictData from '@/data/cedict.json';
+import cedictData from '../data/cedict.json';
 
 interface CedictEntry {
   pinyin: string;

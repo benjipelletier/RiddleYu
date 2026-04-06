@@ -54,9 +54,9 @@ export default function HomePage() {
     }
     setError('');
     if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-      (document as any).startViewTransition(() => router.push(`/cluster/${encodeURIComponent(word)}`));
+      (document as any).startViewTransition(() => router.push(`/tongyizuo/cluster/${encodeURIComponent(word)}`));
     } else {
-      router.push(`/cluster/${encodeURIComponent(word)}`);
+      router.push(`/tongyizuo/cluster/${encodeURIComponent(word)}`);
     }
   }
 
@@ -84,9 +84,9 @@ export default function HomePage() {
                 }}
                 onClick={() => {
                   if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-                    (document as any).startViewTransition(() => router.push(`/cluster/${encodeURIComponent(w)}`));
+                    (document as any).startViewTransition(() => router.push(`/tongyizuo/cluster/${encodeURIComponent(w)}`));
                   } else {
-                    router.push(`/cluster/${encodeURIComponent(w)}`);
+                    router.push(`/tongyizuo/cluster/${encodeURIComponent(w)}`);
                   }
                 }}
                 onMouseEnter={() => setHoveredPill(w)}

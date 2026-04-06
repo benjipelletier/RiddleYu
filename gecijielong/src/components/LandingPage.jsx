@@ -69,7 +69,7 @@ export default function LandingPage({ onStart, convert, strictness, onStrictness
 
   // Load suggested lines on mount
   useEffect(() => {
-    fetch("/api/start-with")
+    fetch("/api/gecijielong/start-with")
       .then(r => r.json())
       .then(data => setSuggested(data.lines || []));
   }, []);
@@ -84,7 +84,7 @@ export default function LandingPage({ onStart, convert, strictness, onStrictness
     }
     setSearching(true);
     debounceRef.current = setTimeout(() => {
-      fetch(`/api/start-with?char=${encodeURIComponent(char)}&mode=${strictness}`)
+      fetch(`/api/gecijielong/start-with?char=${encodeURIComponent(char)}&mode=${strictness}`)
         .then(r => r.json())
         .then(data => { setResults(data.lines || []); setSearching(false); });
     }, 300);

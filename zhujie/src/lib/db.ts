@@ -5,7 +5,7 @@ import type { YuKuai, YuKuaiEncounter, UserYuKuai, Familiarity, LineDecompositio
 let _sql: ReturnType<typeof neon> | null = null;
 function getSql() {
   if (!_sql) {
-    _sql = neon(process.env.DATABASE_URL!);
+    _sql = neon(process.env.ZHUJIE_DATABASE_URL!);
   }
   return _sql;
 }

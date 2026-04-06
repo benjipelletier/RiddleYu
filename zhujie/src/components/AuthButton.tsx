@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signIn, signOut } from 'next-auth/react';
-import { colors } from '@/styles/theme';
+import { colors } from '../styles/theme';
 
 export default function AuthButton() {
   const { data: session, status } = useSession();

@@ -1,0 +1,40 @@
+{
+  "name": "benji-codes",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "@neondatabase/serverless": "^1.0.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/kv": "^3.0.0",
+    "@vercel/postgres": "^0.10.0",
+    "d3": "^7.9.0",
+    "d3-force": "^3.0.0",
+    "d3-polygon": "^3.0.1",
+    "next": "^15.5.14",
+    "next-auth": "^4.24.13",
+    "openai": "^6.33.0",
+    "opencc-js": "^1.0.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-force-graph-2d": "^1.29.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/d3-force": "^3.0.10",
+    "@types/d3-polygon": "^3.0.2",
+    "@types/node": "^20",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

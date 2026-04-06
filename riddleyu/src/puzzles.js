@@ -46,11 +46,11 @@ export function getDevUseBackend() { return localStorage.getItem('dev_use_backen
 export function setDevUseBackend(val) { localStorage.setItem('dev_use_backend', val ? 'true' : 'false') }
 
 export async function getPuzzleForDate(dateStr) {
-  if (import.meta.env.DEV && !getDevUseBackend()) {
+  if (process.env.NODE_ENV === 'development' && !getDevUseBackend()) {
     return HARDCODED_PUZZLES.find(p => p.date === dateStr) || HARDCODED_PUZZLES[0]
   }
   try {
-    const res = await fetch(`/api/puzzle?date=${dateStr}`)
+    const res = await fetch(`/api/riddleyu/puzzle?date=${dateStr}`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const puzzle = await res.json()
     try { localStorage.setItem(`puzzle:${dateStr}`, JSON.stringify(puzzle)) } catch {}

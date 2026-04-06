@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import './index.css'
 import { Analytics } from '@vercel/analytics/react'
 import { useGame } from './hooks/useGame'
 import { getDevUseBackend, setDevUseBackend } from './puzzles'
@@ -25,7 +26,7 @@ export default function App() {
     game.reloadPuzzle()
   }
 
-  const devToggle = import.meta.env.DEV && (
+  const devToggle = process.env.NODE_ENV === 'development' && (
     <button style={devToggleStyle} onClick={toggleSource}>
       {useBackend ? '🌐 Backend' : '📦 Hardcoded'}
     </button>

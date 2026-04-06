@@ -42,7 +42,7 @@ export function InfoCard({ simplified, pinyin, clusterLabel, clusterHue, core_sc
     .filter((g, i, a) => a.indexOf(g) === i).slice(0, 3).join('  ·  ');
 
   function navigate() {
-    const url = `/cluster/${encodeURIComponent(simplified)}`;
+    const url = `/tongyizuo/cluster/${encodeURIComponent(simplified)}`;
     if (typeof document !== 'undefined' && 'startViewTransition' in document) {
       (document as any).startViewTransition(() => router.push(url));
     } else {

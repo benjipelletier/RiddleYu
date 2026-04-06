@@ -21,7 +21,7 @@ export default function SearchBar({ placeholder = 'Enter a Chinese word...' }: P
       return;
     }
     setError('');
-    router.push(`/cluster/${encodeURIComponent(word)}`);
+    router.push(`/tongyizuo/cluster/${encodeURIComponent(word)}`);
   }
 
   return (

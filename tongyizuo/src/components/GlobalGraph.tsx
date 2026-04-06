@@ -106,7 +106,7 @@ export default function GlobalGraph() {
     let cancelled = false;
     setError('');
     setData(null);
-    fetch('/api/graph', { cache: 'no-store' })
+    fetch('/api/tongyizuo/graph', { cache: 'no-store' })
       .then(async (r) => {
         if (!r.ok) {
           const body = await r.json().catch(() => ({}));
@@ -150,7 +150,7 @@ export default function GlobalGraph() {
 
   const handleNodeClick = useCallback(
     (node: GraphNode) => {
-      router.push('/cluster/' + encodeURIComponent(node.id));
+      router.push('/tongyizuo/cluster/' + encodeURIComponent(node.id));
     },
     [router]
   );

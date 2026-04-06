@@ -1,15 +1,18 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import type { ContentMap } from './types';
 import type { LineDecomposition } from './yukuai-types';
 
-let _client: Anthropic | null = null;
+let _client: OpenAI | null = null;
 function getClient() {
   if (!_client) {
-    _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+    _client = new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY!,
+      baseURL: 'https://openrouter.ai/api/v1',
+    });
   }
   return _client;
 }
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'deepseek/deepseek-chat-v3-0324';
 
 // ─── Pass 1: Content Map ─────────────────────────────────────────────────────
 
@@ -34,17 +37,19 @@ Be specific and grounded. Every observation must reference specific lines or wor
 Return ONLY valid JSON. No markdown, no explanation.`;
 
 export async function generateContentMap(text: string): Promise<ContentMap> {
-  const response = await getClient().messages.create({
+  const response = await getClient().chat.completions.create({
     model: MODEL,
     max_tokens: 4096,
-    system: PASS1_SYSTEM,
-    messages: [{ role: 'user', content: text }],
+    messages: [
+      { role: 'system', content: PASS1_SYSTEM },
+      { role: 'user', content: text },
+    ],
   });
 
-  const content = response.content[0];
-  if (content.type !== 'text') throw new Error('Unexpected response type');
+  const content = response.choices[0]?.message?.content;
+  if (!content) throw new Error('Empty response from DeepSeek');
 
-  return parseJSON<ContentMap>(content.text);
+  return parseJSON<ContentMap>(content);
 }
 
 function parseJSON<T>(raw: string): T {
@@ -84,7 +89,7 @@ Produce a decomposition following this JSON schema:
       "canonical_id": "vocab:鲸鱼" | "grammar:V来V去" | "expr:春花秋月",
       "type": "vocab" | "grammar" | "expression",
       "surface_form": "the exact characters as they appear in this line",
-      "contextual_meaning": "what this means specifically HERE, not the dictionary default"
+      "contextual_meaning": "SHORT (max 10 words) — what this means HERE, not dictionary default"
     }
   ],
   "connections": [
@@ -110,9 +115,9 @@ Rules for canonical_id format:
 Rules for decomposition:
 - SKIP boring words (我, 你, 的, 在, 是, 了, 不) unless their usage is genuinely unusual or interesting
 - For grammar patterns, the canonical_id uses variables (V, N, A) and the surface_form shows the actual words
-- CONTEXTUAL MEANING must explain what this means HERE, not the dictionary default
-- CONNECTIONS must be specific. Not "relates to line X" but "V来V去 shifts from 游 (swimming) to 跑 (running) — the exhaustion escalates"
-- GOTCHAS only when there's a real trap: 多音字, reversed character pairs (言语 vs 语言), register mismatches, false friends
+- CONTEXTUAL MEANING: max 10 words. Brief, punchy. "ocean of people — lost in the crowd". NOT a literary essay.
+- CONNECTIONS: one short sentence. "游来游去 echoes 跑来跑去 in line 3". NOT a paragraph.
+- GOTCHAS: one short sentence. "言语 ≠ 语言: speech vs language system". NOT an essay.
 - Keep decomposition focused — 2-6 yukuai per line is typical. Don't force it.
 
 Return ONLY valid JSON. No markdown, no explanation.`;
@@ -146,15 +151,17 @@ Line ${lineIndex}: ${lines[lineIndex]}
 ## Surrounding Lines (±3)
 ${surroundingLines}`;
 
-  const response = await getClient().messages.create({
+  const response = await getClient().chat.completions.create({
     model: MODEL,
     max_tokens: 4096,
-    system: DECOMPOSE_SYSTEM,
-    messages: [{ role: 'user', content: userMessage }],
+    messages: [
+      { role: 'system', content: DECOMPOSE_SYSTEM },
+      { role: 'user', content: userMessage },
+    ],
   });
 
-  const content = response.content[0];
-  if (content.type !== 'text') throw new Error('Unexpected response type');
+  const content = response.choices[0]?.message?.content;
+  if (!content) throw new Error('Empty response from DeepSeek');
 
-  return parseJSON<LineDecomposition>(content.text);
+  return parseJSON<LineDecomposition>(content);
 }

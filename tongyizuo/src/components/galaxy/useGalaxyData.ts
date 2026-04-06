@@ -84,7 +84,7 @@ export function useGalaxyData(): UseGalaxyDataReturn {
   // Initial load
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/galaxy?offset=0&limit=${BATCH_SIZE}`)
+    fetch(`/api/tongyizuo/galaxy?offset=0&limit=${BATCH_SIZE}`)
       .then((r) => { if (!r.ok) throw new Error(`Galaxy API error ${r.status}`); return r.json(); })
       .then((data: GalaxyBatchResponse) => {
         offsetRef.current = BATCH_SIZE;
@@ -103,7 +103,7 @@ export function useGalaxyData(): UseGalaxyDataReturn {
     const offset = offsetRef.current;
     // Advance offset before fetch to prevent double-trigger if loadMore is called again
     offsetRef.current = offset + BATCH_SIZE;
-    fetch(`/api/galaxy?offset=${offset}&limit=${BATCH_SIZE}`)
+    fetch(`/api/tongyizuo/galaxy?offset=${offset}&limit=${BATCH_SIZE}`)
       .then((r) => { if (!r.ok) throw new Error(`Galaxy API error ${r.status}`); return r.json(); })
       .then((data: GalaxyBatchResponse) => {
         mergeBatch(data);

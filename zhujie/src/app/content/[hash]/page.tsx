@@ -166,13 +166,11 @@ export default function ContentWorkspace() {
             decomposition={activeResult?.decomposition ?? null}
             yukuai={activeResult?.yukuai ?? []}
             userState={activeResult?.userState ?? null}
-            recallIds={activeResult?.recallIds ?? []}
             loading={loading}
             lines={contentData.lines}
             isMobile={true}
             onLineJump={handleLineJump}
             onBack={handleBack}
-            onRecallResult={handleRecallResult}
           />
         ) : (
           <div style={{ padding: 16, height: '100%', overflowY: 'auto' }}>
@@ -201,12 +199,10 @@ export default function ContentWorkspace() {
         decomposition={activeResult?.decomposition ?? null}
         yukuai={activeResult?.yukuai ?? []}
         userState={activeResult?.userState ?? null}
-        recallIds={activeResult?.recallIds ?? []}
         loading={loading}
         lines={contentData.lines}
         isMobile={false}
         onLineJump={handleLineJump}
-        onRecallResult={handleRecallResult}
       />
     </div>
   );

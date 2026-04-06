@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const userId = (session?.user as { id?: string })?.id ?? null;
 
-    // Check cache for decomposition
+    // Check cache for decomposition (ignore legacy annotations without yukuai field)
     const cached = await getLineDecomposition(body.contentHash, body.lineIndex);
-    if (cached) {
+    if (cached && Array.isArray(cached.yukuai)) {
       // Even on cache hit, process encounters for logged-in users
       const decomposition = cached;
       const yukuai = await Promise.all(
@@ -91,7 +91,8 @@ export async function POST(request: NextRequest) {
     };
     return NextResponse.json({ ...response, recallIds });
   } catch (error) {
-    console.error('Decompose line error:', error);
-    return NextResponse.json({ error: 'Failed to decompose line' }, { status: 500 });
+    console.error('Decompose line error:', error instanceof Error ? error.message : error);
+    console.error('Full error:', error);
+    return NextResponse.json({ error: 'Failed to decompose line', detail: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

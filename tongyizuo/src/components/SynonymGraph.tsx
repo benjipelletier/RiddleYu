@@ -177,7 +177,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
   function doNavigate(word: string) {
     setClickedWord(word);
     markVisited(word);
-    const url = `/cluster/${encodeURIComponent(word)}?from=${encodeURIComponent(focusWord)}`;
+    const url = `/tongyizuo/cluster/${encodeURIComponent(word)}?from=${encodeURIComponent(focusWord)}`;
     setTimeout(() => {
       if (typeof document !== 'undefined' && 'startViewTransition' in document) {
         (document as any).startViewTransition(() => { router.push(url); });
@@ -262,7 +262,7 @@ export default function SynonymGraph({ clusters, focusWord, focusGlosses = [], f
                       }}
                       onClick={() => {
                         if (!isChinese) return;
-                        const url = `/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(focusWord)}`;
+                        const url = `/tongyizuo/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(focusWord)}`;
                         if (typeof document !== 'undefined' && 'startViewTransition' in document) {
                           (document as any).startViewTransition(() => router.push(url));
                         } else {

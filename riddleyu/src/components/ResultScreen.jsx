@@ -8,7 +8,7 @@ function buildShareText(puzzle, declarations) {
     return []
   }).join('')
   const chengyu = puzzle.chengyu.chars.join('')
-  return `谜语 ${puzzle.date}\n${chengyu} · ${puzzle.chengyu.pinyin}\n${tiles}\nriddleyu.benji.codes`
+  return `谜语 ${puzzle.date}\n${chengyu} · ${puzzle.chengyu.pinyin}\n${tiles}\nbenji.codes/riddleyu`
 }
 
 function getTimeUntilMidnightET() {

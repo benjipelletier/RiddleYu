@@ -25,7 +25,7 @@ export default function App() {
   useEffect(() => {
     if (!current) return;
     setChainsLoading(true);
-    fetch(`/api/chains?line_id=${current.id}&mode=${strictness}`)
+    fetch(`/api/gecijielong/chains?line_id=${current.id}&mode=${strictness}`)
       .then(r => r.json())
       .then(data => { setChains(data.chains); setChainsLoading(false); });
   }, [current, strictness]);

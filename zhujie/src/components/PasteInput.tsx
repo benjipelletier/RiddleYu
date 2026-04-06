@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { colors, fonts } from '@/styles/theme';
-import type { ContentMapResponse } from '@/lib/types';
+import { colors, fonts } from '../styles/theme';
+import type { ContentMapResponse } from '../lib/types';
 
 interface PasteInputProps {
   onComplete: (data: ContentMapResponse) => void;
@@ -21,7 +21,7 @@ export default function PasteInput({ onComplete }: PasteInputProps) {
     setError(null);
 
     try {
-      const res = await fetch('/api/content-map', {
+      const res = await fetch('/api/zhujie/content-map', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

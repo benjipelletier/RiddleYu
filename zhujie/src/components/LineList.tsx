@@ -1,6 +1,6 @@
 'use client';
 
-import { colors, fonts } from '@/styles/theme';
+import { colors, fonts } from '../styles/theme';
 
 interface LineListProps {
   lines: string[];

@@ -67,7 +67,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
     if (!w || !/[\u4e00-\u9fff]/.test(w)) return;
     setNavSearch('');
     setNavOpen(false);
-    navigate(router, `/cluster/${encodeURIComponent(w)}`);
+    navigate(router, `/tongyizuo/cluster/${encodeURIComponent(w)}`);
   }
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
 
     const hintTimer = setTimeout(() => setShowSlowHint(true), 4000);
 
-    fetch(`/api/cluster/${encodeURIComponent(simplified)}${retryCount > 0 ? `?retry=${retryCount}` : ''}`)
+    fetch(`/api/tongyizuo/cluster/${encodeURIComponent(simplified)}${retryCount > 0 ? `?retry=${retryCount}` : ''}`)
       .then(async (res) => {
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
@@ -137,7 +137,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
             onClick={() => {
               const go = () => {
                 if (window.history.length > 1) router.back();
-                else router.push('/');
+                else router.push('/tongyizuo');
               };
               if (typeof document !== 'undefined' && 'startViewTransition' in document) {
                 (document as any).startViewTransition(go);
@@ -155,7 +155,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
               <span style={s.breadcrumbSep}>/</span>
               <button
                 style={{ ...s.breadcrumbFrom, color: fromHover ? 'rgba(217,164,65,0.8)' : 'rgba(217,164,65,0.5)' }}
-                onClick={() => navigate(router, `/cluster/${encodeURIComponent(fromWord)}`)}
+                onClick={() => navigate(router, `/tongyizuo/cluster/${encodeURIComponent(fromWord)}`)}
                 onMouseEnter={() => setFromHover(true)}
                 onMouseLeave={() => setFromHover(false)}
               >
@@ -259,7 +259,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                     cursor: isCurrent ? 'default' : 'pointer',
                   }}
                   onClick={() => {
-                    if (!isCurrent) navigate(router, `/cluster/${encodeURIComponent(w)}?from=${encodeURIComponent(simplified)}`);
+                    if (!isCurrent) navigate(router, `/tongyizuo/cluster/${encodeURIComponent(w)}?from=${encodeURIComponent(simplified)}`);
                   }}
                   onMouseEnter={() => !isCurrent && setHoveredHistoryWord(w)}
                   onMouseLeave={() => setHoveredHistoryWord(null)}
@@ -434,7 +434,7 @@ export default function ClusterPage({ params }: { params: Promise<{ word: string
                                 transform: isHovered ? 'translateY(-1px)' : 'none',
                                 transition: 'background 0.15s, transform 0.15s',
                               }}
-                              onClick={() => isChinese && navigate(router, `/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(simplified)}`)}
+                              onClick={() => isChinese && navigate(router, `/tongyizuo/cluster/${encodeURIComponent(c.collocation)}?from=${encodeURIComponent(simplified)}`)}
                               onMouseEnter={() => isChinese && setHoveredCollIdx(i)}
                               onMouseLeave={() => setHoveredCollIdx(null)}
                             >

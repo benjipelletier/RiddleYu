@@ -1,0 +1,75 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@riddleyu/*": [
+        "riddleyu/src/*"
+      ],
+      "@gecijielong/*": [
+        "gecijielong/*"
+      ],
+      "@gumai/*": [
+        "gumai/*"
+      ],
+      "@geciqiao/*": [
+        "geciqiao/src/*"
+      ],
+      "@zhujie/*": [
+        "zhujie/src/*"
+      ],
+      "@tongyizuo/*": [
+        "tongyizuo/src/*"
+      ],
+      "@engine/*": [
+        "engine/src/*"
+      ]
+    }
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "app/**/*.js",
+    "app/**/*.jsx",
+    "geciqiao/src/**/*.js",
+    "geciqiao/src/**/*.jsx",
+    "riddleyu/src/**/*.js",
+    "riddleyu/src/**/*.jsx",
+    "gecijielong/src/**/*.js",
+    "gecijielong/src/**/*.jsx",
+    "projects.config.ts",
+    "middleware.ts",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/dist",
+    "**/.next"
+  ]
+}

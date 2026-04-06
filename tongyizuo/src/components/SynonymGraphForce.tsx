@@ -380,7 +380,7 @@ export default function SynonymGraphForce({ clusters, focusWord, activeClusterId
 
   const handleNodeClick = useCallback((node: GNode) => {
     if (node.isFocus) return;
-    if (selectedId === node.id) router.push('/cluster/' + encodeURIComponent(node.id));
+    if (selectedId === node.id) router.push('/tongyizuo/cluster/' + encodeURIComponent(node.id));
     else setSelectedId(node.id);
   }, [selectedId, router]);
 
@@ -458,7 +458,7 @@ export default function SynonymGraphForce({ clusters, focusWord, activeClusterId
           <div style={{ fontSize: '11px', letterSpacing: '0.07em', color: `${col(selNode.clusterIdx)}88`, fontFamily: "'JetBrains Mono', monospace" }}>
             {selCluster.label}
           </div>
-          <button onClick={() => router.push('/cluster/' + encodeURIComponent(selNode.id))} style={{
+          <button onClick={() => router.push('/tongyizuo/cluster/' + encodeURIComponent(selNode.id))} style={{
             marginTop: '4px',
             background: `${col(selNode.clusterIdx)}14`,
             border: `1px solid ${col(selNode.clusterIdx)}44`,
