@@ -5,9 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "benji.codes",
   description: "A collection of Chinese language tools and games.",
-  icons: {
-    icon: "/favicon.svg",
-  },
+
 };
 
 export default function RootLayout({

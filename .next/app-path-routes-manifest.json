@@ -1,0 +1,13 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/gecijielong/chains/route": "/api/gecijielong/chains",
+  "/api/gecijielong/search/route": "/api/gecijielong/search",
+  "/api/gecijielong/featured/route": "/api/gecijielong/featured",
+  "/api/gecijielong/start-with/route": "/api/gecijielong/start-with",
+  "/api/riddleyu/puzzle/route": "/api/riddleyu/puzzle",
+  "/api/riddleyu/generate/route": "/api/riddleyu/generate",
+  "/page": "/",
+  "/gecijielong/page": "/gecijielong",
+  "/geciqiao/page": "/geciqiao",
+  "/riddleyu/page": "/riddleyu"
+}

@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST='{"app/gecijielong/page.tsx -> @gecijielong/src/App":{"id":8299,"files":["static/chunks/9bc33152.ae901319c53e8056.js","static/chunks/299.25cfae031bdf03f3.js"]},"app/riddleyu/page.tsx -> @riddleyu/App":{"id":7694,"files":["static/css/a28978189e1909f4.css","static/chunks/694.d0ff1a54dbad8800.js"]}}';
