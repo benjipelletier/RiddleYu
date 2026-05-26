@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",
+    "@neondatabase/auth": "^0.4.1-beta",
     "@neondatabase/serverless": "^1.0.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/kv": "^3.0.0",
@@ -16,12 +17,12 @@
     "d3": "^7.9.0",
     "d3-force": "^3.0.0",
     "d3-polygon": "^3.0.1",
-    "next": "^15.5.14",
-    "next-auth": "^4.24.13",
+    "ireal-reader": "^1.3.1",
+    "next": "^16.2.6",
     "openai": "^6.33.0",
     "opencc-js": "^1.0.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "react-force-graph-2d": "^1.29.1",
     "recharts": "^2.12.7"
   },
@@ -30,8 +31,9 @@
     "@types/d3-force": "^3.0.10",
     "@types/d3-polygon": "^3.0.2",
     "@types/node": "^20",
-    "@types/react": "^18.3.28",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "tsx": "^4.22.3",
     "typescript": "^5"
   },
   "engines": {

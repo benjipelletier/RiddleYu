@@ -86,7 +86,7 @@ export const projects: ProjectConfig[] = [
     tagline: 'jazz',
     description: 'Explore jazz chord progressions through interactive real book analysis and harmonic visualization.',
     tags: ['jazz', 'music', 'chords'],
-    enabled: false,
+    enabled: true,
   },
   {
     name: 'engine',

@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "baseUrl": ".",
     "plugins": [
@@ -47,6 +47,9 @@
       ],
       "@engine/*": [
         "engine/src/*"
+      ],
+      "@jazz/*": [
+        "jazz/*"
       ]
     }
   },
@@ -61,9 +64,12 @@
     "riddleyu/src/**/*.jsx",
     "gecijielong/src/**/*.js",
     "gecijielong/src/**/*.jsx",
+    "jazz/lib/**/*.ts",
+    "jazz/components/**/*.tsx",
     "projects.config.ts",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
