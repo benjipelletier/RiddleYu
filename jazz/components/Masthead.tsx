@@ -12,7 +12,11 @@ interface Viewer {
 }
 
 async function signOut() {
-  await fetch('/api/auth/sign-out', { method: 'POST' });
+  await fetch('/api/auth/sign-out', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
   window.location.reload();
 }
 
