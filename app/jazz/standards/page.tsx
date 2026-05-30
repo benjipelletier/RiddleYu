@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { NOTE_NAMES, keyName, relativeShort, styleAccent } from '@jazz/lib/format';
 import { VinylHero } from '@jazz/components/VinylHero';
+import { ActivelyPracticing } from '@jazz/components/ActivelyPracticing';
+import { FamiliarityExplorer } from '@jazz/components/FamiliarityExplorer';
+import { LoadingSpindle } from '@jazz/components/LoadingSpindle';
 
 interface ApiItem {
   id: string;
@@ -36,7 +39,7 @@ function SkillsDots({ count }: { count: number }) {
 
 export default function LibraryPage() {
   return (
-    <Suspense fallback={<main className="library"><div className="empty">loading the book…</div></main>}>
+    <Suspense fallback={<main className="library"><LoadingSpindle label="cueing the book…" /></main>}>
       <LibraryPageInner />
     </Suspense>
   );
@@ -72,14 +75,16 @@ function LibraryPageInner() {
   // Fetch (server-side pagination for title/last sorts; we request a wide
   // result to filter client-side for styles/keys/composers because the API
   // doesn't support them server-side yet).
+  // One fetch for the whole landing page. Search is client-side only and
+  // scoped to the catalog table; the other strips (VinylHero,
+  // ActivelyPracticing, FamiliarityExplorer) keep using the full set.
   useEffect(() => {
     setLoading(true);
-    const params = new URLSearchParams({ limit: '200' });
+    const params = new URLSearchParams({ limit: '2000' });
     if (!sort.col) params.set('sort', 'recent');
     else if (sort.col === 'bpm') params.set('sort', 'target_bpm');
     else if (sort.col === 'last') params.set('sort', 'recent');
     else params.set('sort', 'title');
-    if (debouncedQuery) params.set('q', debouncedQuery);
     fetch(`/api/jazz/standards?${params}`)
       .then(r => r.json())
       .then(res => {
@@ -88,7 +93,7 @@ function LibraryPageInner() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [debouncedQuery, sort.col]);
+  }, [sort.col]);
 
   const allStyles = useMemo(() => {
     const s = new Set<string>();
@@ -98,6 +103,13 @@ function LibraryPageInner() {
 
   const filtered = useMemo(() => {
     let list = items.slice();
+    if (debouncedQuery) {
+      const q = debouncedQuery.toLowerCase();
+      list = list.filter(s =>
+        s.title.toLowerCase().includes(q) ||
+        (s.composer ?? '').toLowerCase().includes(q),
+      );
+    }
     if (show === 'practiced') list = list.filter(s => s.sessionsCount > 0);
     if (show === 'never') list = list.filter(s => s.sessionsCount === 0);
     if (composerFilter) list = list.filter(s => s.composer === composerFilter);
@@ -122,7 +134,7 @@ function LibraryPageInner() {
       });
     }
     return list;
-  }, [items, show, composerFilter, styleFilter, keyFilter, sort]);
+  }, [items, debouncedQuery, show, composerFilter, styleFilter, keyFilter, sort]);
 
   const start = page * perPage;
   const rows = filtered.slice(start, start + perPage);
@@ -171,16 +183,27 @@ function LibraryPageInner() {
     );
   }
 
+  if (loading && items.length === 0) {
+    return (
+      <main className="library">
+        <LoadingSpindle label="cueing the book…" />
+      </main>
+    );
+  }
+
   return (
     <main className="library">
       <VinylHero
         total={total}
         known={items.filter(s => s.sessionsCount > 0).length}
         totalSessions={items.reduce((m, s) => m + s.sessionsCount, 0)}
-        query={query}
-        setQuery={setQuery}
         items={items}
       />
+
+      <div className="landing-strips">
+        <ActivelyPracticing items={items} />
+        <FamiliarityExplorer />
+      </div>
 
       {(composerFilter || styleFilter.length > 0 || keyFilter !== null) && (
         <div className="active-filters">
@@ -208,6 +231,20 @@ function LibraryPageInner() {
           </button>
         </div>
       )}
+
+      <div className="search">
+        <span className="search-label">search</span>
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="search the book…"
+          className="search-input"
+        />
+        {query && (
+          <button className="search-clear" onClick={() => setQuery('')}>clear</button>
+        )}
+      </div>
 
       <div className="toolbar">
         <div className="chips">
@@ -289,7 +326,22 @@ function LibraryPageInner() {
           </div>
         </div>
 
-        {loading && rows.length === 0 && <div className="empty">loading the book…</div>}
+        {loading && rows.length === 0 && (
+          <div className="lib-skel">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="lib-skel-row">
+                <div className="lib-skel-cell" />
+                <div className="lib-skel-cell tall" />
+                <div className="lib-skel-cell" />
+                <div className="lib-skel-cell" />
+                <div className="lib-skel-cell" />
+                <div className="lib-skel-cell" />
+                <div className="lib-skel-cell" />
+                <div className="lib-skel-cell" />
+              </div>
+            ))}
+          </div>
+        )}
 
         {rows.map((s, i) => (
           <div key={s.id} className="cat-row">

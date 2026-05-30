@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const q = params.get('q')?.trim() ?? '';
   const sortParam = (params.get('sort') ?? 'title') as SortKey;
   const sort: SortKey = ['title', 'recent', 'target_bpm'].includes(sortParam) ? sortParam : 'title';
-  const limit = Math.min(Math.max(parseInt(params.get('limit') ?? '50'), 1), 200);
+  const limit = Math.min(Math.max(parseInt(params.get('limit') ?? '50'), 1), 2000);
   const offset = Math.max(parseInt(params.get('offset') ?? '0'), 0);
 
   const like = q ? `%${q.toLowerCase()}%` : null;

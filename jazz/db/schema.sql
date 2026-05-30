@@ -75,3 +75,26 @@ CREATE TABLE IF NOT EXISTS target_bpm_changes (
     changed_at    TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_tbc_standard ON target_bpm_changes(standard_id, changed_at DESC);
+
+-- Saved voicings for individual chord symbols (e.g. "Cmaj7", "F-7", "Bb7/D").
+-- Globally addressable across standards: a Cmaj7 voicing saved while practicing
+-- Sunny Side surfaces on any other standard that contains Cmaj7. Voicings are
+-- absolute (MIDI numbers, not chord-relative) per user spec — Cmaj7 ≠ Fmaj7.
+CREATE TABLE IF NOT EXISTS chord_voicings (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    chord_symbol        TEXT NOT NULL,
+    -- chord_symbol with alterations stripped (E7b9 → E7). Lets us share
+    -- voicings bidirectionally across an altered-dominant family. Computed
+    -- in the app on insert; see jazz/lib/chord-symbol.ts.
+    base_symbol         TEXT NOT NULL,
+    voicing_type        TEXT NOT NULL DEFAULT 'willy',
+    notes               INT[] NOT NULL,
+    label               TEXT,
+    sort_order          INT NOT NULL DEFAULT 0,
+    origin_standard_id  UUID REFERENCES standards(id) ON DELETE SET NULL,
+    created_by          TEXT,
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_chord_voicings_symbol ON chord_voicings(chord_symbol, voicing_type);
+CREATE INDEX IF NOT EXISTS idx_chord_voicings_base   ON chord_voicings(base_symbol, voicing_type);

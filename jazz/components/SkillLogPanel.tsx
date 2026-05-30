@@ -7,7 +7,7 @@ export interface SkillSummary {
   skillId: string;
   skillName: string;
   tracksBpm: boolean;
-  lhGroup: 'shells' | 'chords' | 'bass' | null;
+  lhGroup: 'lead' | 'comping' | 'bass' | null;
   lhPart: string | null;
   rhPart: string | null;
   mode: string;
@@ -18,18 +18,16 @@ export interface SkillSummary {
   history: { practicedAt: string; bpm: number | null }[];
 }
 
-const LH_GROUP_ORDER: ('shells' | 'chords' | 'bass')[] = ['shells', 'chords', 'bass'];
+const LH_GROUP_ORDER: ('lead' | 'comping' | 'bass')[] = ['lead', 'comping', 'bass'];
 const LH_GROUP_LABEL: Record<string, string> = {
-  shells: 'Shells',
-  chords: 'Chords',
+  lead: 'Lead',
+  comping: 'Comping',
   bass: 'Bass',
 };
 const LH_PART_LABEL: Record<string, string> = {
   '3-7s': '3-7s',
   'stock': 'Stock voicings',
   'willy': 'Willy Special',
-  'sustained-bass': 'Sustained bass',
-  'half-bass': 'Half-bass',
   'quarter-bass': 'Quarter-bass',
 };
 const RH_PART_LABEL: Record<string, string> = {
@@ -38,8 +36,8 @@ const RH_PART_LABEL: Record<string, string> = {
   'melody': 'melody',
   'solo': 'solo',
 };
-const LH_PART_ORDER = ['3-7s', 'stock', 'willy', 'sustained-bass', 'half-bass', 'quarter-bass'];
-const RH_PART_ORDER = ['3-7s', 'stock', 'melody', 'solo'];
+const LH_PART_ORDER = ['3-7s', 'stock', 'willy', 'two-hand', 'quarter-bass'];
+const RH_PART_ORDER = ['3-7s', 'stock', 'melody', 'solo', 'combined'];
 
 function daysLabel(iso: string | null): string {
   if (!iso) return 'never';
@@ -51,7 +49,7 @@ function daysLabel(iso: string | null): string {
 }
 
 interface GroupedLh {
-  group: 'shells' | 'chords' | 'bass';
+  group: 'lead' | 'comping' | 'bass';
   lhPart: string;
   cells: SkillSummary[];
 }
@@ -69,7 +67,7 @@ function groupByLh(skills: SkillSummary[]): GroupedLh[] {
     const cells = byLh.get(lhPart);
     if (!cells || cells.length === 0) continue;
     cells.sort((a, b) => RH_PART_ORDER.indexOf(a.rhPart ?? '') - RH_PART_ORDER.indexOf(b.rhPart ?? ''));
-    groups.push({ group: cells[0].lhGroup as 'shells' | 'chords' | 'bass', lhPart, cells });
+    groups.push({ group: cells[0].lhGroup as 'lead' | 'comping' | 'bass', lhPart, cells });
   }
   return groups;
 }
@@ -95,7 +93,7 @@ export function SkillLogPanel({
 }) {
   const groups = useMemo(() => groupByLh(skills), [skills]);
   const byGroup = useMemo(() => {
-    const m: Record<string, GroupedLh[]> = { shells: [], chords: [], bass: [] };
+    const m: Record<string, GroupedLh[]> = { lead: [], comping: [], bass: [] };
     for (const g of groups) m[g.group].push(g);
     return m;
   }, [groups]);
@@ -192,10 +190,14 @@ export function SkillLogPanel({
           return (
             <div key={group} className="skill-group">
               <div className="skill-group-head">{LH_GROUP_LABEL[group]}</div>
-              {groupCards.map(({ lhPart, cells }) => (
+              {groupCards.map(({ lhPart, cells }) => {
+                const isTwoHand = lhPart === 'two-hand';
+                return (
                 <div key={lhPart} className="lh-card">
                   <div className="lh-card-head">
-                    <span className="lh-card-title">LH plays {LH_PART_LABEL[lhPart]}</span>
+                    <span className="lh-card-title">
+                      {isTwoHand ? 'Two-handed' : `LH plays ${LH_PART_LABEL[lhPart]}`}
+                    </span>
                   </div>
                   <div className="lh-card-rows">
                     {cells.map(sk => {
@@ -205,7 +207,10 @@ export function SkillLogPanel({
                       return (
                         <div key={sk.skillId} className={`lh-card-row ${p ? 'lh-card-row-pending' : ''}`}>
                           <span className="rh-label">
-                            <span className="rh-with">with</span> RH {RH_PART_LABEL[sk.rhPart ?? '']}
+                            {isTwoHand
+                              ? <span className="rh-solo-label">{sk.skillName}</span>
+                              : <><span className="rh-with">with</span> RH {RH_PART_LABEL[sk.rhPart ?? '']}</>
+                            }
                           </span>
                           <span className="rh-stat rh-stat-best">
                             <span className="rs-num">{sk.bestBpm ?? '—'}</span>
@@ -246,7 +251,8 @@ export function SkillLogPanel({
                     })}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           );
         })}

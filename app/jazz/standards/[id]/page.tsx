@@ -1,13 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChordChart } from '@jazz/components/ChordChart';
 import { KeyPicker } from '@jazz/components/KeyPicker';
 import { BpmEditor } from '@jazz/components/BpmEditor';
 import { SkillLogPanel, type SkillSummary } from '@jazz/components/SkillLogPanel';
 import { SkillTrendChart } from '@jazz/components/SkillTrendChart';
+import type { Voicing } from '@jazz/components/VoicingPopover';
+import { LoadingSpindle } from '@jazz/components/LoadingSpindle';
+import { transposeMeasures } from '@jazz/lib/transpose';
 import { keyName, relativeShort, styleAccent } from '@jazz/lib/format';
 
 interface StandardDetail {
@@ -30,15 +33,34 @@ interface StandardDetail {
 }
 
 export default function StandardDetailPage() {
+  return (
+    <Suspense fallback={<main className="detail"><LoadingSpindle label="cueing the chart…" /></main>}>
+      <StandardDetailInner />
+    </Suspense>
+  );
+}
+
+function StandardDetailInner() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // ?key=N on the URL (used by the familiarity explorer to deep-link to a
+  // specific transposition) seeds the viewing key for the first render.
+  const initialKey = (() => {
+    const raw = searchParams.get('key');
+    if (raw == null) return null;
+    const n = parseInt(raw);
+    return Number.isFinite(n) && n >= 0 && n <= 11 ? n : null;
+  })();
   const [standard, setStandard] = useState<StandardDetail | null>(null);
-  const [viewingKey, setViewingKey] = useState<number | null>(null);
+  const [viewingKey, setViewingKey] = useState<number | null>(initialKey);
   const [editBpm, setEditBpm] = useState(false);
   const [draftBpm, setDraftBpm] = useState(0);
   const [savingBpm, setSavingBpm] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [voicings, setVoicings] = useState<Record<string, Voicing[]>>({});
 
   useEffect(() => {
     fetch('/api/jazz/viewer').then(r => r.json()).then(v => setSignedIn(!!v?.signedIn)).catch(() => {});
@@ -67,6 +89,67 @@ export default function StandardDetailPage() {
     fetchStandard(viewingKey ?? undefined);
   }, [viewingKey, id]);  // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Mirror viewingKey into ?key=N on the URL so refreshes / shares preserve
+  // it. Runs both when the user picks a key AND when the initial fetch
+  // resolves the home key for a URL that had no ?key param.
+  useEffect(() => {
+    if (viewingKey == null) return;
+    const current = parseInt(searchParams.get('key') ?? '');
+    if (current === viewingKey) return;
+    const sp = new URLSearchParams(searchParams.toString());
+    sp.set('key', String(viewingKey));
+    router.replace(`?${sp.toString()}`, { scroll: false });
+  }, [viewingKey, router, searchParams]);
+
+  const changeKey = useCallback((k: number) => {
+    setViewingKey(k);
+  }, []);
+
+  // Distinct chord symbols + total cell count at the current viewing key —
+  // distinct symbols drive the voicing batch-fetch; cell count drives the
+  // Willy Special familiarity %.
+  const { displayedChords, totalCells } = useMemo(() => {
+    if (!standard) return { displayedChords: [] as string[], totalCells: 0 };
+    const k = viewingKey ?? standard.homeKey;
+    const shift = ((k - standard.homeKey) % 12 + 12) % 12;
+    const bars = transposeMeasures(standard.chartData, shift);
+    const set = new Set<string>();
+    let cells = 0;
+    for (const bar of bars) for (const c of bar) if (c) { set.add(c); cells++; }
+    return { displayedChords: Array.from(set), totalCells: cells };
+  }, [standard, viewingKey]);
+
+  // Willy familiarity: % of chord cells (instances, not distinct chords)
+  // whose chord symbol has at least one saved Willy Special voicing.
+  const familiarity = useMemo(() => {
+    if (!standard || totalCells === 0) return null;
+    const k = viewingKey ?? standard.homeKey;
+    const shift = ((k - standard.homeKey) % 12 + 12) % 12;
+    const bars = transposeMeasures(standard.chartData, shift);
+    let known = 0;
+    for (const bar of bars) {
+      for (const c of bar) {
+        if (c && (voicings[c]?.length ?? 0) > 0) known++;
+      }
+    }
+    return { known, total: totalCells, percent: Math.round((known / totalCells) * 100) };
+  }, [standard, viewingKey, voicings, totalCells]);
+
+  // Batch-fetch voicings for every distinct chord on the chart.
+  useEffect(() => {
+    if (displayedChords.length === 0) {
+      setVoicings({});
+      return;
+    }
+    const ctrl = new AbortController();
+    const qs = new URLSearchParams({ chords: displayedChords.join(','), type: 'willy' });
+    fetch(`/api/jazz/voicings?${qs.toString()}`, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then((res: { voicings: Record<string, Voicing[]> }) => setVoicings(res.voicings ?? {}))
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [displayedChords]);
+
   async function saveBpm(value: number) {
     if (!standard) return;
     setSavingBpm(true);
@@ -84,7 +167,7 @@ export default function StandardDetailPage() {
   if (loading || !standard) {
     return (
       <main className="detail">
-        <div className="empty">loading…</div>
+        <LoadingSpindle label="cueing the chart…" />
       </main>
     );
   }
@@ -143,11 +226,11 @@ export default function StandardDetailPage() {
           <KeyPicker
             selected={viewingKey ?? standard.homeKey}
             homeKey={standard.homeKey}
-            onChange={setViewingKey}
+            onChange={changeKey}
             progressByKey={standard.progressByKey}
           />
           {viewingKey !== null && viewingKey !== standard.homeKey && (
-            <button className="transpose-back" onClick={() => setViewingKey(standard.homeKey)} title="reset to home key">
+            <button className="transpose-back" onClick={() => changeKey(standard.homeKey)} title="reset to home key">
               ↺ from {keyName(standard.homeKey, standard.isMinor)}
             </button>
           )}
@@ -223,6 +306,16 @@ export default function StandardDetailPage() {
                 </>
               )}
               <span className="chart-meta-spacer"></span>
+              {familiarity && (
+                <span
+                  className="chart-meta-item chart-meta-familiarity"
+                  title={`${familiarity.known} of ${familiarity.total} chord cells have a saved Willy Special voicing`}
+                >
+                  <span className="chart-meta-label">willy</span>{' '}
+                  <span className="chart-meta-val">{familiarity.percent}%</span>
+                  <span className="chart-meta-frac">{familiarity.known}/{familiarity.total}</span>
+                </span>
+              )}
               <span className="chart-meta-item chart-meta-bars">{standard.chartData.length} bars</span>
             </div>
             <ChordChart
@@ -230,6 +323,10 @@ export default function StandardDetailPage() {
               homeKey={standard.homeKey}
               viewingKey={viewingKey ?? standard.homeKey}
               form={standard.form}
+              voicings={voicings}
+              signedIn={signedIn}
+              standardId={standard.id}
+              onVoicingsChange={setVoicings}
             />
           </section>
 

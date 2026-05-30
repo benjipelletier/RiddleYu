@@ -35,6 +35,24 @@ export async function getSessionUser(): Promise<JazzUser | null> {
 }
 
 /**
+ * The raw Neon Auth user, regardless of whether they're the owner. Used by
+ * the viewer endpoint to detect "signed in with a non-owner email" — we
+ * surface this so the UI can show a "only Benji can sign in" banner instead
+ * of pretending nothing happened after a non-owner OAuth round-trip.
+ */
+export async function getRawAuthUser(): Promise<JazzUser | null> {
+  const { data } = await auth.getSession();
+  const user = data?.user;
+  if (!user) return null;
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    name: user.name ?? null,
+    image: user.image ?? null,
+  };
+}
+
+/**
  * Look up the owner user from neon_auth.user by email. The Better Auth user
  * table is named `user` (singular) and lives in the `neon_auth` schema.
  * Returns null until the owner has signed in at least once.

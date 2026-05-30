@@ -22,15 +22,11 @@ export function VinylHero({
   total,
   known,
   totalSessions,
-  query,
-  setQuery,
   items,
 }: {
   total: number;
   known: number;
   totalSessions: number;
-  query: string;
-  setQuery: (q: string) => void;
   items: HeroStandard[];
 }) {
   const router = useRouter();
@@ -131,20 +127,6 @@ export function VinylHero({
         <span><b>{known}</b> in your book</span>
         <span className="vh-stats-dot">●</span>
         <span><b>{totalSessions}</b> takes</span>
-      </div>
-
-      <div className="search">
-        <span className="search-label">search</span>
-        <input
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="search the book…"
-          className="search-input"
-        />
-        {query && (
-          <button className="search-clear" onClick={() => setQuery('')}>clear</button>
-        )}
       </div>
     </section>
   );
