@@ -1091,7 +1091,7 @@ html[data-paper="slate"] .style-pill { background: var(--paper-2); border-color:
  * ========================================================================= */
 .landing-strips {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(360px, 1.6fr);
+  grid-template-columns: minmax(300px, 1.1fr) minmax(420px, 1.3fr);
   gap: 16px;
   margin: 20px 0 18px;
   align-items: start;
@@ -1134,20 +1134,76 @@ html[data-paper="slate"] .style-pill { background: var(--paper-2); border-color:
   gap: 10px;
 }
 .ap-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
+  position: relative;
+  display: block;
+  padding: 14px 16px;
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: 3px;
   text-decoration: none;
   color: var(--ink);
-  transition: background 0.12s, border-color 0.12s;
+  overflow: hidden;
+  transition: border-color 0.12s, transform 0.12s;
 }
 .ap-card:hover {
-  background: var(--paper-2);
   border-color: var(--accent-ink);
+  transform: translateY(-1px);
+}
+.ap-card-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: oklch(0.84 0.014 80 / 0.5);
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.ap-card-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--ap-fill-pct, 0%);
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    oklch(0.72 0.16 50) 50%,
+    var(--accent) 100%
+  );
+  background-size: 200% 100%;
+  animation: ap-fill-shimmer 3.5s linear infinite;
+  transition: width 0.4s ease-out;
+  border-top-right-radius: 1px;
+  border-bottom-right-radius: 1px;
+}
+.ap-card-complete .ap-card-fill::after {
+  background: linear-gradient(
+    90deg,
+    oklch(0.68 0.18 45) 0%,
+    oklch(0.78 0.20 60) 50%,
+    oklch(0.68 0.18 45) 100%
+  );
+  background-size: 200% 100%;
+}
+.ap-card-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ap-card-pct {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  letter-spacing: 0.02em;
+}
+@keyframes ap-fill-shimmer {
+  from { background-position: 0 0; }
+  to   { background-position: 200% 0; }
 }
 .ap-card-when {
   font-family: var(--mono);
@@ -1182,12 +1238,13 @@ html[data-paper="slate"] .style-pill { background: var(--paper-2); border-color:
 }
 .ap-card-stats {
   display: flex;
+  align-items: baseline;
   gap: 4px;
   font-family: var(--mono);
   font-size: 10px;
   color: var(--ink-3);
   letter-spacing: 0.02em;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 .ap-card-stats b { color: var(--ink); font-weight: 600; }
 .ap-stats-sep { color: var(--ink-4); }
