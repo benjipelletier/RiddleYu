@@ -19,7 +19,7 @@ interface FamiliarItem {
 }
 
 export function FamiliarityExplorer() {
-  const [keyChoice, setKeyChoice] = useState<'any' | 'home' | number>('any');
+  const [keyChoice, setKeyChoice] = useState<'any' | 'home' | number>('home');
   const [items, setItems] = useState<FamiliarItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,40 +38,58 @@ export function FamiliarityExplorer() {
     return () => ctrl.abort();
   }, [keyChoice]);
 
+  const keyLabel =
+    keyChoice === 'any' ? 'best key per song'
+    : keyChoice === 'home' ? "each song's home key"
+    : `transposed to ${NOTE_NAMES[keyChoice]}`;
+
   return (
     <section className="fam-explorer">
       <header className="fam-head">
-        <div className="fam-head-text">
-          <span className="fam-eyebrow">explore by willy familiarity</span>
-          <h2 className="fam-title">songs you might already know</h2>
-        </div>
-        <div className="fam-key-picker">
-          <button
-            className={`fam-key fam-key-wide ${keyChoice === 'any' ? 'on' : ''}`}
-            onClick={() => setKeyChoice('any')}
-            title="best familiarity across all 12 keys"
-          >
-            any
-          </button>
-          <button
-            className={`fam-key ${keyChoice === 'home' ? 'on' : ''}`}
-            onClick={() => setKeyChoice('home')}
-            title="show familiarity at each song's home key"
-          >
-            home
-          </button>
-          {NOTE_NAMES.map((n, k) => (
-            <button
-              key={k}
-              className={`fam-key ${keyChoice === k ? 'on' : ''}`}
-              onClick={() => setKeyChoice(k)}
-              title={`transpose every song to ${n}`}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
+        <span className="fam-eyebrow">
+          explore by willy familiarity
+          <span className="fam-info" tabIndex={0} role="button" aria-label="how willy familiarity is scored">
+            i
+            <span className="fam-info-tip" role="tooltip">
+              <strong>Willy Special familiarity</strong>{' '}counts each chord cell in the chart whose chord symbol has at least one saved Willy voicing. Slash chords (C7/G) and altered dominants (E7b9) share with their base (C7, E7). 100% means every cell on the page has a voicing you&rsquo;ve saved — in this key.
+            </span>
+          </span>
+        </span>
       </header>
+
+      <div className="fam-box">
+        <div className="fam-box-head">
+          <div className="fam-box-head-text">
+            <h3 className="fam-box-title">songs you might already know</h3>
+            <span className="fam-count">{items.length} song{items.length === 1 ? '' : 's'} · {keyLabel}</span>
+          </div>
+          <div className="fam-key-picker">
+            <button
+              className={`fam-key fam-key-wide ${keyChoice === 'any' ? 'on' : ''}`}
+              onClick={() => setKeyChoice('any')}
+              title="best familiarity across all 12 keys"
+            >
+              any
+            </button>
+            <button
+              className={`fam-key ${keyChoice === 'home' ? 'on' : ''}`}
+              onClick={() => setKeyChoice('home')}
+              title="show familiarity at each song's home key"
+            >
+              home
+            </button>
+            {NOTE_NAMES.map((n, k) => (
+              <button
+                key={k}
+                className={`fam-key ${keyChoice === k ? 'on' : ''}`}
+                onClick={() => setKeyChoice(k)}
+                title={`transpose every song to ${n}`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
 
       {loading ? (
         <div className="fam-empty">
@@ -104,6 +122,7 @@ export function FamiliarityExplorer() {
           ))}
         </ul>
       )}
+      </div>
     </section>
   );
 }
