@@ -88,12 +88,12 @@ export default function RiddleyuSunset() {
 }
 
 const mementos = [
-  { icon: "🏂", pos: { top: -22, left: -18 }, size: 38, rot: -14, dur: 4.0, delay: 0, opacity: 0.95 },
-  { icon: "📺", pos: { top: -20, right: -16 }, size: 34, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.95 },
-  { icon: "🐻", pos: { bottom: -20, left: -16 }, size: 36, rot: 10, dur: 4.5, delay: 1.2, opacity: 0.95 },
-  { icon: "🏂", pos: { bottom: -22, right: -18 }, size: 32, rot: -8, dur: 5.5, delay: 0.3, opacity: 0.95 },
-  { icon: "🐻", pos: { top: "43%", left: -24 }, size: 30, rot: -6, dur: 5.2, delay: 1.5, opacity: 0.95 },
-  { icon: "📺", pos: { top: "41%", right: -24 }, size: 30, rot: 8, dur: 4.2, delay: 0.9, opacity: 0.95 },
+  { icon: "🏂", pos: { top: 14, left: 12 }, size: 28, rot: -14, dur: 4.0, delay: 0, opacity: 0.14 },
+  { icon: "📺", pos: { top: 74, right: 12 }, size: 24, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.14 },
+  { icon: "🐻", pos: { top: "30%", left: 10 }, size: 26, rot: 10, dur: 4.5, delay: 1.2, opacity: 0.14 },
+  { icon: "📺", pos: { top: "30%", right: 10 }, size: 24, rot: 8, dur: 4.2, delay: 0.9, opacity: 0.14 },
+  { icon: "🐻", pos: { bottom: 16, left: 14 }, size: 28, rot: -6, dur: 5.2, delay: 1.5, opacity: 0.14 },
+  { icon: "🏂", pos: { bottom: 16, right: 14 }, size: 26, rot: 6, dur: 5.5, delay: 0.3, opacity: 0.14 },
 ];
 
 const floatCss = `
@@ -125,7 +125,7 @@ const s: Record<string, React.CSSProperties> = {
   decor: {
     position: "absolute",
     inset: 0,
-    zIndex: 3,
+    zIndex: -1,
     pointerEvents: "none",
   },
   banner: {
