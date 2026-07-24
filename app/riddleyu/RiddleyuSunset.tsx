@@ -46,12 +46,11 @@ export default function RiddleyuSunset() {
           Every good thing has its final day.
         </p>
 
-        {/* easter egg: her voice, one more round */}
-        <p
+        {/* easter egg: ask for one more round, her voice answers */}
+        <div
           style={{
-            ...s.egg,
             opacity: revealed ? 1 : 0,
-            maxHeight: revealed ? 60 : 0,
+            maxHeight: revealed ? 90 : 0,
             marginTop: revealed ? 14 : 0,
             overflow: "hidden",
             transition:
@@ -59,8 +58,9 @@ export default function RiddleyuSunset() {
           }}
           aria-hidden={!revealed}
         >
-          “I’m down. Let’s do it.”
-        </p>
+          <p style={s.eggPrompt}>one more round?</p>
+          <p style={s.egg}>“I’m down. Let’s do it.”</p>
+        </div>
 
         <div style={s.divider} />
 
@@ -188,6 +188,12 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: 15,
     color: "#2c2416",
     lineHeight: 1.8,
+  },
+  eggPrompt: {
+    fontFamily: "'Noto Serif SC', serif",
+    fontSize: 13,
+    color: "#a09880",
+    marginBottom: 4,
   },
   egg: {
     fontFamily: "'Playfair Display', serif",
