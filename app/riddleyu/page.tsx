@@ -41,12 +41,12 @@ export default function RiddleyuPage() {
 
           <div style={s.divider} />
 
-          <p style={s.storyZh}>谜语日就到这里了。谜底，其实我们一直都懂。</p>
+          <p style={s.storyZh}>谜语日的这一章，翻篇了。舍不得，却心怀感激。</p>
           <p style={s.story}>
-            riddleyu is closing its doors. It was made in a season that
-            mattered — four characters at a time, by two people who liked the
-            same puzzles. The answer was always easy to see; I just liked
-            playing the game with you. Thank you for every round.
+            The riddleyu chapter has closed. As hard as it is to let go of
+            something that came to mean this much — something so dear, so
+            close — I’m grateful for everything it taught me, and for the
+            person it’s going to make me into.
           </p>
 
           <div style={s.divider} />
