@@ -66,7 +66,7 @@ export default function RiddleyuSunset() {
         <div style={s.eggWrap}>
           {revealed ? (
             <p style={s.egg}>
-              “I’m down. Let’s <span style={s.doooo}>doooo</span> it.”
+              I’m down. Let’s <span style={s.doooo}>doooo</span> it.
             </p>
           ) : (
             <button
