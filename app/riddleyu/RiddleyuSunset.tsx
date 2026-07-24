@@ -59,7 +59,9 @@ export default function RiddleyuSunset() {
           aria-hidden={!revealed}
         >
           <p style={s.eggPrompt}>one more round?</p>
-          <p style={s.egg}>“I’m down. Let’s do it.”</p>
+          <p style={s.egg}>
+            “I’m down. Let’s <span style={s.doooo}>doooo</span> it.”
+          </p>
         </div>
 
         <div style={s.divider} />
@@ -198,8 +200,11 @@ const s: Record<string, React.CSSProperties> = {
   egg: {
     fontFamily: "'Playfair Display', serif",
     fontSize: 15,
-    fontStyle: "italic",
+    fontStyle: "normal",
     color: "#c0392b",
+  },
+  doooo: {
+    fontStyle: "italic",
   },
   divider: {
     width: "100%",
