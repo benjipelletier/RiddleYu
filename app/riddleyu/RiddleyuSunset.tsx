@@ -254,7 +254,7 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: "'Playfair Display', serif",
     fontSize: 16,
     fontStyle: "normal",
-    color: "#c0392b",
+    color: "#8a6d3b",
     animation: "riddleyu-fade 0.5s ease",
   },
   doooo: {
