@@ -53,6 +53,15 @@ export default function RiddleyuSunset() {
           ))}
         </div>
 
+        <div style={s.divider} />
+
+        <p style={s.storyZh}>谜语日的这一章，翻篇了。舍不得，却心怀感激。</p>
+        <p style={s.story}>
+          The riddleyu chapter has closed. As hard as it is to let go of this,
+          it meant something dear to me, and I am grateful for everything it
+          taught me. <span style={s.heart}>♥</span>
+        </p>
+
         {/* easter egg: ask for one more round, her voice answers */}
         <div style={s.eggWrap}>
           {revealed ? (
@@ -72,15 +81,6 @@ export default function RiddleyuSunset() {
 
         <div style={s.divider} />
 
-        <p style={s.storyZh}>谜语日的这一章，翻篇了。舍不得，却心怀感激。</p>
-        <p style={s.story}>
-          The riddleyu chapter has closed. As hard as it is to let go of this,
-          it meant something dear to me, and I am grateful for everything it
-          taught me. <span style={s.heart}>♥</span>
-        </p>
-
-        <div style={s.divider} />
-
         <p style={s.countdown}>谜语日 · riddleyu · Jan 2026 – July 2026</p>
       </div>
     </main>
@@ -88,16 +88,26 @@ export default function RiddleyuSunset() {
 }
 
 const mementos = [
-  { icon: "🏂", pos: { top: "5%", left: "7%" }, size: 34, rot: -14, dur: 4.0, delay: 0, opacity: 0.22 },
-  { icon: "📺", pos: { top: "9%", left: "82%" }, size: 30, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.22 },
-  { icon: "🐻", pos: { top: "24%", left: "40%" }, size: 28, rot: 10, dur: 4.5, delay: 1.2, opacity: 0.2 },
-  { icon: "🏂", pos: { top: "34%", left: "88%" }, size: 30, rot: 8, dur: 5.2, delay: 0.4, opacity: 0.22 },
-  { icon: "📺", pos: { top: "42%", left: "5%" }, size: 28, rot: -8, dur: 4.6, delay: 1.5, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "58%", left: "85%" }, size: 30, rot: 6, dur: 5.5, delay: 0.9, opacity: 0.22 },
-  { icon: "🏂", pos: { top: "64%", left: "9%" }, size: 28, rot: -6, dur: 4.3, delay: 0.2, opacity: 0.2 },
-  { icon: "📺", pos: { top: "78%", left: "42%" }, size: 30, rot: 10, dur: 5.1, delay: 1.1, opacity: 0.22 },
-  { icon: "🐻", pos: { top: "84%", left: "84%" }, size: 28, rot: -10, dur: 4.8, delay: 0.7, opacity: 0.2 },
-  { icon: "🏂", pos: { top: "90%", left: "12%" }, size: 32, rot: 8, dur: 5.4, delay: 1.3, opacity: 0.22 },
+  { icon: "🏂", pos: { top: "4%", left: "6%" }, size: 32, rot: -14, dur: 4.0, delay: 0, opacity: 0.22 },
+  { icon: "📺", pos: { top: "3%", left: "44%" }, size: 26, rot: 8, dur: 4.7, delay: 1.0, opacity: 0.2 },
+  { icon: "🐻", pos: { top: "7%", left: "84%" }, size: 30, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.22 },
+  { icon: "📺", pos: { top: "15%", left: "24%" }, size: 26, rot: -10, dur: 4.4, delay: 1.6, opacity: 0.2 },
+  { icon: "🐻", pos: { top: "18%", left: "66%" }, size: 28, rot: 6, dur: 5.3, delay: 0.3, opacity: 0.2 },
+  { icon: "🏂", pos: { top: "27%", left: "8%" }, size: 30, rot: 10, dur: 4.6, delay: 0.9, opacity: 0.22 },
+  { icon: "🐻", pos: { top: "30%", left: "50%" }, size: 26, rot: -8, dur: 5.1, delay: 1.3, opacity: 0.18 },
+  { icon: "🏂", pos: { top: "33%", left: "88%" }, size: 30, rot: 8, dur: 5.2, delay: 0.4, opacity: 0.22 },
+  { icon: "📺", pos: { top: "44%", left: "4%" }, size: 28, rot: -8, dur: 4.8, delay: 1.5, opacity: 0.2 },
+  { icon: "🏂", pos: { top: "48%", left: "90%" }, size: 28, rot: 10, dur: 4.3, delay: 0.2, opacity: 0.2 },
+  { icon: "🐻", pos: { top: "56%", left: "10%" }, size: 30, rot: 6, dur: 5.5, delay: 0.9, opacity: 0.22 },
+  { icon: "📺", pos: { top: "58%", left: "84%" }, size: 28, rot: -12, dur: 4.9, delay: 1.1, opacity: 0.2 },
+  { icon: "🏂", pos: { top: "67%", left: "40%" }, size: 26, rot: 8, dur: 5.0, delay: 0.5, opacity: 0.18 },
+  { icon: "📺", pos: { top: "70%", left: "6%" }, size: 28, rot: 10, dur: 4.5, delay: 1.4, opacity: 0.2 },
+  { icon: "🐻", pos: { top: "72%", left: "88%" }, size: 30, rot: -10, dur: 5.3, delay: 0.7, opacity: 0.22 },
+  { icon: "📺", pos: { top: "82%", left: "50%" }, size: 28, rot: 6, dur: 5.1, delay: 1.1, opacity: 0.2 },
+  { icon: "🐻", pos: { top: "86%", left: "20%" }, size: 28, rot: -8, dur: 4.7, delay: 0.3, opacity: 0.2 },
+  { icon: "🏂", pos: { top: "88%", left: "82%" }, size: 30, rot: 12, dur: 4.8, delay: 0.8, opacity: 0.22 },
+  { icon: "📺", pos: { top: "94%", left: "10%" }, size: 26, rot: -6, dur: 5.4, delay: 1.3, opacity: 0.2 },
+  { icon: "🐻", pos: { top: "95%", left: "64%" }, size: 28, rot: 8, dur: 4.6, delay: 0.6, opacity: 0.2 },
 ];
 
 const floatCss = `
