@@ -34,24 +34,28 @@ export default function RiddleyuPage() {
           </div>
           <div style={s.pinyin}>qǔ zhōng rén sàn</div>
           <p style={s.meaning}>
-            The song ends and the crowd drifts home.
+            When the song ends, the crowd drifts home,
             <br />
-            Every good thing keeps its own hour.
+            and every good thing keeps its own quiet hour.
           </p>
 
           <div style={s.divider} />
 
-          <p style={s.storyZh}>谜语日的这一章，翻篇了。舍不得，却心怀感激。</p>
+          <p style={s.storyZh}>
+            曲终了，这一章也轻轻翻了过去。
+            <br />
+            纵有不舍，仍满怀感激。
+          </p>
           <p style={s.story}>
-            The riddleyu chapter has closed. As hard as it is to let go of
-            something that came to mean this much — something so dear, so
-            close — I’m grateful for everything it taught me, and for the
-            person it’s going to make me into.
+            The riddleyu chapter has closed. Letting go of something this
+            dear, this close, aches in its own quiet way. And still, I am
+            grateful. For all it gave me, and for the person it is slowly
+            teaching me to become.
           </p>
 
           <div style={s.divider} />
 
-          <p style={s.countdown}>谜语日 · riddleyu · 谢幕</p>
+          <p style={s.countdown}>谜语日 · riddleyu · Jan 2026 – July 2026</p>
         </div>
       </main>
     </>
