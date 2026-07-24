@@ -4,7 +4,6 @@ import { useState } from "react";
 
 export default function RiddleyuSunset() {
   const [revealed, setRevealed] = useState(false);
-  const toggle = () => setRevealed((v) => !v);
 
   return (
     <main style={s.root}>
@@ -17,8 +16,7 @@ export default function RiddleyuSunset() {
             key={i}
             style={{
               position: "absolute",
-              top: m.top,
-              left: m.left,
+              ...m.pos,
               transform: `rotate(${m.rot}deg)`,
               opacity: m.opacity,
             }}
@@ -47,49 +45,29 @@ export default function RiddleyuSunset() {
         <div style={s.seal}>谜</div>
         <div style={s.badge}>谢幕 · Curtain call</div>
 
-        {/* one last puzzle to solve */}
-        <div
-          style={s.charRow}
-          onClick={toggle}
-          role="button"
-          tabIndex={0}
-          aria-label="曲终人散"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              toggle();
-            }
-          }}
-        >
+        <div style={s.charRow}>
           {["曲", "终", "人", "散"].map((c, i) => (
             <div key={i} style={s.chengyuChar}>
               {c}
             </div>
           ))}
         </div>
-        <div style={s.pinyin}>qǔ zhōng rén sàn</div>
-        <p style={s.meaning}>
-          The song ends, the crowd drifts home.
-          <br />
-          Every good thing has its final day.
-        </p>
 
         {/* easter egg: ask for one more round, her voice answers */}
-        <div
-          style={{
-            opacity: revealed ? 1 : 0,
-            maxHeight: revealed ? 90 : 0,
-            marginTop: revealed ? 14 : 0,
-            overflow: "hidden",
-            transition:
-              "opacity 0.5s ease, max-height 0.5s ease, margin-top 0.5s ease",
-          }}
-          aria-hidden={!revealed}
-        >
-          <p style={s.eggPrompt}>one more round?</p>
-          <p style={s.egg}>
-            “I’m down. Let’s <span style={s.doooo}>doooo</span> it.”
-          </p>
+        <div style={s.eggWrap}>
+          {revealed ? (
+            <p style={s.egg}>
+              “I’m down. Let’s <span style={s.doooo}>doooo</span> it.”
+            </p>
+          ) : (
+            <button
+              type="button"
+              style={s.eggBtn}
+              onClick={() => setRevealed(true)}
+            >
+              one more round?
+            </button>
+          )}
         </div>
 
         <div style={s.divider} />
@@ -110,18 +88,22 @@ export default function RiddleyuSunset() {
 }
 
 const mementos = [
-  { icon: "🏂", top: "13%", left: "9%", size: 30, rot: -10, dur: 4.0, delay: 0, opacity: 0.3 },
-  { icon: "🐻", top: "22%", left: "83%", size: 26, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.32 },
-  { icon: "📺", top: "68%", left: "11%", size: 28, rot: 8, dur: 4.5, delay: 1.2, opacity: 0.28 },
-  { icon: "🐻", top: "79%", left: "82%", size: 24, rot: -8, dur: 5.5, delay: 0.3, opacity: 0.3 },
-  { icon: "🏂", top: "84%", left: "44%", size: 22, rot: 6, dur: 4.2, delay: 0.9, opacity: 0.24 },
-  { icon: "📺", top: "8%", left: "60%", size: 22, rot: -6, dur: 5.2, delay: 1.5, opacity: 0.22 },
+  { icon: "🏂", pos: { top: 20, left: 16 }, size: 36, rot: -12, dur: 4.0, delay: 0, opacity: 0.5 },
+  { icon: "📺", pos: { top: 20, right: 16 }, size: 32, rot: 10, dur: 5.0, delay: 0.6, opacity: 0.48 },
+  { icon: "🐻", pos: { bottom: 22, left: 18 }, size: 34, rot: 8, dur: 4.5, delay: 1.2, opacity: 0.5 },
+  { icon: "🏂", pos: { bottom: 22, right: 18 }, size: 30, rot: -8, dur: 5.5, delay: 0.3, opacity: 0.46 },
+  { icon: "🐻", pos: { top: 14, left: "45%" }, size: 26, rot: -6, dur: 5.2, delay: 1.5, opacity: 0.4 },
+  { icon: "📺", pos: { bottom: 16, left: "46%" }, size: 28, rot: 6, dur: 4.2, delay: 0.9, opacity: 0.42 },
 ];
 
 const floatCss = `
 @keyframes riddleyu-float {
   from { transform: translateY(0); }
   to   { transform: translateY(-16px); }
+}
+@keyframes riddleyu-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   [style*="riddleyu-float"] { animation: none !important; }
@@ -236,30 +218,30 @@ const s: Record<string, React.CSSProperties> = {
     fontSize: 30,
     fontWeight: 700,
   },
-  pinyin: {
-    fontFamily: "'Playfair Display', serif",
+  eggWrap: {
+    marginTop: 18,
+    minHeight: 44,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eggBtn: {
+    fontFamily: "'Noto Serif SC', serif",
     fontSize: 14,
-    color: "#7a7570",
-    fontStyle: "italic",
-    marginBottom: 12,
-  },
-  meaning: {
-    fontFamily: "'Noto Serif SC', serif",
-    fontSize: 15,
-    color: "#2c2416",
-    lineHeight: 1.8,
-  },
-  eggPrompt: {
-    fontFamily: "'Noto Serif SC', serif",
-    fontSize: 13,
-    color: "#a09880",
-    marginBottom: 4,
+    color: "#8a6d3b",
+    background: "transparent",
+    border: "1.5px solid #cdb98f",
+    borderRadius: 999,
+    padding: "9px 22px",
+    cursor: "pointer",
+    letterSpacing: 0.5,
   },
   egg: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: 15,
+    fontSize: 16,
     fontStyle: "normal",
     color: "#c0392b",
+    animation: "riddleyu-fade 0.5s ease",
   },
   doooo: {
     fontStyle: "italic",
