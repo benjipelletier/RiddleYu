@@ -8,6 +8,34 @@ export default function RiddleyuSunset() {
 
   return (
     <main style={s.root}>
+      <style>{floatCss}</style>
+
+      {/* floating mementos */}
+      <div style={s.decor} aria-hidden="true">
+        {mementos.map((m, i) => (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              top: m.top,
+              left: m.left,
+              transform: `rotate(${m.rot}deg)`,
+              opacity: m.opacity,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                fontSize: m.size,
+                animation: `riddleyu-float ${m.dur}s ease-in-out ${m.delay}s infinite alternate`,
+              }}
+            >
+              {m.icon}
+            </span>
+          </span>
+        ))}
+      </div>
+
       {/* Sunset banner */}
       <div style={s.banner}>
         <span style={s.bannerDot} />
@@ -81,6 +109,25 @@ export default function RiddleyuSunset() {
   );
 }
 
+const mementos = [
+  { icon: "🏂", top: "13%", left: "9%", size: 30, rot: -10, dur: 4.0, delay: 0, opacity: 0.3 },
+  { icon: "🐻", top: "22%", left: "83%", size: 26, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.32 },
+  { icon: "📺", top: "68%", left: "11%", size: 28, rot: 8, dur: 4.5, delay: 1.2, opacity: 0.28 },
+  { icon: "🐻", top: "79%", left: "82%", size: 24, rot: -8, dur: 5.5, delay: 0.3, opacity: 0.3 },
+  { icon: "🏂", top: "84%", left: "44%", size: 22, rot: 6, dur: 4.2, delay: 0.9, opacity: 0.24 },
+  { icon: "📺", top: "8%", left: "60%", size: 22, rot: -6, dur: 5.2, delay: 1.5, opacity: 0.22 },
+];
+
+const floatCss = `
+@keyframes riddleyu-float {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="riddleyu-float"] { animation: none !important; }
+}
+`;
+
 const s: Record<string, React.CSSProperties> = {
   root: {
     minHeight: "100dvh",
@@ -90,8 +137,18 @@ const s: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     padding: 24,
     background: "#e2dcd0",
+    position: "relative",
+    overflow: "hidden",
+  },
+  decor: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 0,
+    pointerEvents: "none",
   },
   banner: {
+    position: "relative",
+    zIndex: 1,
     display: "flex",
     alignItems: "center",
     gap: 10,
@@ -123,6 +180,7 @@ const s: Record<string, React.CSSProperties> = {
     textAlign: "center",
     boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
     position: "relative",
+    zIndex: 1,
   },
   seal: {
     position: "absolute",
