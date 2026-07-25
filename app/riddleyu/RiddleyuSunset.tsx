@@ -1,39 +1,6 @@
-"use client";
-
-import { useState } from "react";
-
 export default function RiddleyuSunset() {
-  const [revealed, setRevealed] = useState(false);
-
   return (
     <main style={s.root}>
-      <style>{floatCss}</style>
-
-      {/* mementos scattered across the page background, behind the card */}
-      <div style={s.decor} aria-hidden="true">
-        {mementos.map((m, i) => (
-          <span
-            key={i}
-            style={{
-              position: "absolute",
-              ...m.pos,
-              transform: `rotate(${m.rot}deg)`,
-              opacity: m.opacity,
-            }}
-          >
-            <span
-              style={{
-                display: "inline-block",
-                fontSize: m.size,
-                animation: `riddleyu-float ${m.dur}s ease-in-out ${m.delay}s infinite alternate`,
-              }}
-            >
-              {m.icon}
-            </span>
-          </span>
-        ))}
-      </div>
-
       {/* Sunset banner */}
       <div style={s.banner}>
         <span style={s.bannerDot} />
@@ -62,23 +29,6 @@ export default function RiddleyuSunset() {
           taught me. <span style={s.heart}>♥</span>
         </p>
 
-        {/* easter egg: ask for one more round, her voice answers */}
-        <div style={s.eggWrap}>
-          {revealed ? (
-            <p style={s.egg}>
-              I’m down. Let’s <span style={s.doooo}>doooo</span> it.
-            </p>
-          ) : (
-            <button
-              type="button"
-              style={s.eggBtn}
-              onClick={() => setRevealed(true)}
-            >
-              one more round?
-            </button>
-          )}
-        </div>
-
         <div style={s.divider} />
 
         <p style={s.countdown}>谜语日 · riddleyu · Jan 2026 – July 2026</p>
@@ -86,43 +36,6 @@ export default function RiddleyuSunset() {
     </main>
   );
 }
-
-const mementos = [
-  { icon: "🏂", pos: { top: "4%", left: "6%" }, size: 32, rot: -14, dur: 4.0, delay: 0, opacity: 0.22 },
-  { icon: "📺", pos: { top: "3%", left: "44%" }, size: 26, rot: 8, dur: 4.7, delay: 1.0, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "7%", left: "84%" }, size: 30, rot: 12, dur: 5.0, delay: 0.6, opacity: 0.22 },
-  { icon: "📺", pos: { top: "15%", left: "24%" }, size: 26, rot: -10, dur: 4.4, delay: 1.6, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "18%", left: "66%" }, size: 28, rot: 6, dur: 5.3, delay: 0.3, opacity: 0.2 },
-  { icon: "🏂", pos: { top: "27%", left: "8%" }, size: 30, rot: 10, dur: 4.6, delay: 0.9, opacity: 0.22 },
-  { icon: "🐻", pos: { top: "30%", left: "50%" }, size: 26, rot: -8, dur: 5.1, delay: 1.3, opacity: 0.18 },
-  { icon: "🏂", pos: { top: "33%", left: "88%" }, size: 30, rot: 8, dur: 5.2, delay: 0.4, opacity: 0.22 },
-  { icon: "📺", pos: { top: "44%", left: "4%" }, size: 28, rot: -8, dur: 4.8, delay: 1.5, opacity: 0.2 },
-  { icon: "🏂", pos: { top: "48%", left: "90%" }, size: 28, rot: 10, dur: 4.3, delay: 0.2, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "56%", left: "10%" }, size: 30, rot: 6, dur: 5.5, delay: 0.9, opacity: 0.22 },
-  { icon: "📺", pos: { top: "58%", left: "84%" }, size: 28, rot: -12, dur: 4.9, delay: 1.1, opacity: 0.2 },
-  { icon: "🏂", pos: { top: "67%", left: "40%" }, size: 26, rot: 8, dur: 5.0, delay: 0.5, opacity: 0.18 },
-  { icon: "📺", pos: { top: "70%", left: "6%" }, size: 28, rot: 10, dur: 4.5, delay: 1.4, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "72%", left: "88%" }, size: 30, rot: -10, dur: 5.3, delay: 0.7, opacity: 0.22 },
-  { icon: "📺", pos: { top: "82%", left: "50%" }, size: 28, rot: 6, dur: 5.1, delay: 1.1, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "86%", left: "20%" }, size: 28, rot: -8, dur: 4.7, delay: 0.3, opacity: 0.2 },
-  { icon: "🏂", pos: { top: "88%", left: "82%" }, size: 30, rot: 12, dur: 4.8, delay: 0.8, opacity: 0.22 },
-  { icon: "📺", pos: { top: "94%", left: "10%" }, size: 26, rot: -6, dur: 5.4, delay: 1.3, opacity: 0.2 },
-  { icon: "🐻", pos: { top: "95%", left: "64%" }, size: 28, rot: 8, dur: 4.6, delay: 0.6, opacity: 0.2 },
-];
-
-const floatCss = `
-@keyframes riddleyu-float {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-16px); }
-}
-@keyframes riddleyu-fade {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-  [style*="riddleyu-float"] { animation: none !important; }
-}
-`;
 
 const s: Record<string, React.CSSProperties> = {
   root: {
@@ -133,18 +46,8 @@ const s: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     padding: 24,
     background: "#e2dcd0",
-    position: "relative",
-    overflow: "hidden",
-  },
-  decor: {
-    position: "absolute",
-    inset: 0,
-    zIndex: 0,
-    pointerEvents: "none",
   },
   banner: {
-    position: "relative",
-    zIndex: 1,
     display: "flex",
     alignItems: "center",
     gap: 10,
@@ -176,7 +79,6 @@ const s: Record<string, React.CSSProperties> = {
     textAlign: "center",
     boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
     position: "relative",
-    zIndex: 1,
   },
   seal: {
     position: "absolute",
@@ -214,9 +116,6 @@ const s: Record<string, React.CSSProperties> = {
     gap: 8,
     justifyContent: "center",
     marginBottom: 14,
-    cursor: "pointer",
-    userSelect: "none",
-    outline: "none",
   },
   chengyuChar: {
     width: 60,
@@ -231,34 +130,6 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: "'Noto Serif SC', serif",
     fontSize: 30,
     fontWeight: 700,
-  },
-  eggWrap: {
-    marginTop: 18,
-    minHeight: 44,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  eggBtn: {
-    fontFamily: "'Noto Serif SC', serif",
-    fontSize: 14,
-    color: "#8a6d3b",
-    background: "transparent",
-    border: "1.5px solid #cdb98f",
-    borderRadius: 999,
-    padding: "9px 22px",
-    cursor: "pointer",
-    letterSpacing: 0.5,
-  },
-  egg: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: 16,
-    fontStyle: "normal",
-    color: "#8a6d3b",
-    animation: "riddleyu-fade 0.5s ease",
-  },
-  doooo: {
-    fontStyle: "italic",
   },
   divider: {
     width: "100%",
